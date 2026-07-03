@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Wu Xing — Elemental Self Reading</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg-alabaster: #F3EFE6;
+  --bg-page: #F3EFE6;
+  --card: #FCFBF8;
+  --card-2: #FFFFFF;
+  --hairline: #E2DBCB;
+  --hairline-strong: #D4CBB5;
+  --ink: #221F19;
+  --ink-dim: #6F6858;
+  --ink-faint: #A39A85;
+
+  --wood: #5E8A4C;
+  --fire: #BD5B3B;
+  --earth: #A97C34;
+  --metal: #6E7B8C;
+  --water: #35708E;
+
+  --display: 'Fraunces', serif;
+  --body: 'Manrope', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+}
+
+*{ box-sizing: border-box; margin:0; padding:0; }
+:focus-visible{ outline: 2px solid var(--ink); outline-offset: 2px; }
+
+html,body{ height:100%; }
+body{
+  background: var(--bg-alabaster);
+  font-family: var(--body);
+  color: var(--ink);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding: 28px 14px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+.app-shell{
+  width:100%;
+  max-width: 440px;
+  background: var(--bg-alabaster);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 28px;
+  box-shadow: 0 30px 60px -30px rgba(60,50,30,0.28), 0 0 0 1px rgba(255,255,255,0.4) inset;
+  overflow: hidden;
+  position: relative;
+  min-height: 640px;
+}
+
+.screen{ display:none; flex-direction:column; min-height:640px; }
+.screen.active{ display:flex; }
+
+.eyebrow{
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.btn{
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: 0.01em;
+  border-radius: 999px;
+  padding: 14px 22px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.2s ease;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn:active{ transform: scale(0.97); }
+.btn-primary{ background: var(--ink); color: var(--bg-alabaster); width:100%; }
+.btn-primary:hover{ opacity:0.88; }
+.btn-ghost{ background: transparent; color: var(--ink-dim); border-color: var(--hairline-strong); }
+.btn-ghost:hover{ color: var(--ink); border-color: var(--ink-faint); }
+.btn-link{
+  background:none; border:none; color: var(--ink-dim); font-family: var(--body);
+  font-size: 13.5px; font-weight:600; text-decoration: underline; text-underline-offset: 3px;
+  cursor:pointer; padding: 4px 0;
+}
+.btn-link:hover{ color: var(--ink); }
+
+input[type="text"], input[type="date"], input[type="time"]{
+  width:100%;
+  background: var(--card-2);
+  border: 1px solid var(--hairline-strong);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  padding: 15px 16px;
+  border-radius: var(--r-sm);
+  transition: border-color 0.2s ease;
+}
+input::placeholder{ color: var(--ink-faint); }
+input:focus{ border-color: var(--ink-faint); outline: none; }
+label.field-label{
+  display:block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-faint); margin-bottom: 8px;
+}
+
+#screen-onboard{ padding: 44px 26px 30px; justify-content: space-between; }
+.mark{ width: 46px; height:46px; margin: 0 auto 22px; }
+.onboard-copy{ text-align:center; margin-bottom: 34px; }
+.onboard-copy h1{
+  font-family: var(--display); font-weight: 500; font-size: 28px; line-height:1.15;
+  margin-bottom: 10px; letter-spacing: -0.01em;
+}
+.onboard-copy p{ color: var(--ink-dim); font-size: 14.5px; line-height:1.55; max-width: 300px; margin: 0 auto; }
+
+.field-group{ margin-bottom: 18px; }
+.optional-toggle{ display:flex; align-items:center; gap:8px; margin: 6px 2px 22px; }
+.optional-fields{ max-height:0; overflow:hidden; transition: max-height 0.35s ease; }
+.optional-fields.open{ max-height: 400px; }
+.optional-fields-inner{ padding-top: 16px; display:flex; flex-direction:column; gap:14px; }
+
+.onboard-footer{ margin-top: auto; padding-top: 24px; }
+.trust-note{ text-align:center; font-size:12px; color: var(--ink-faint); margin-top:14px; line-height:1.5; }
+
+.modal-veil{
+  position:absolute; inset:0; background: rgba(34,31,25,0.45);
+  backdrop-filter: blur(3px);
+  display:none; align-items:flex-end; justify-content:center;
+  z-index: 40; padding: 16px;
+}
+.modal-veil.active{ display:flex; animation: fade-in 0.2s ease; }
+@keyframes fade-in{ from{opacity:0} to{opacity:1} }
+
+.modal-card{
+  background: var(--card-2);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-lg);
+  padding: 28px 24px 24px;
+  width:100%;
+  max-width: 392px;
+  animation: rise-in 0.28s cubic-bezier(.2,.9,.25,1);
+  box-shadow: 0 20px 50px -20px rgba(60,50,30,0.35);
+}
+@keyframes rise-in{ from{ transform: translateY(24px); opacity:0; } to{ transform: translateY(0); opacity:1; } }
+
+.modal-icon{ width:34px; height:34px; margin-bottom:16px; color: var(--earth); }
+.modal-card h3{ font-family: var(--display); font-weight:500; font-size:20px; line-height:1.3; margin-bottom:10px; }
+.modal-card p{ color: var(--ink-dim); font-size: 14px; line-height:1.6; margin-bottom: 22px; }
+.modal-card p strong{ color: var(--ink); font-weight: 600; }
+.modal-actions{ display:flex; flex-direction:column; gap:10px; }
+
+#screen-dashboard{ padding: 0 0 26px; gap: 14px; }
+.dash-top{ padding: 24px 20px 0; }
+.dash-top-row{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
+.dash-mark{ width:26px; height:26px; opacity:0.9; }
+.dash-reset{ background:none; border:none; color: var(--ink-faint); font-family: var(--mono); font-size:11px; cursor:pointer; letter-spacing:0.05em; }
+.dash-reset:hover{ color: var(--ink-dim); }
+
+.card{
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 20px -14px rgba(60,50,30,0.25);
+}
+.balance-card{ margin: 0 20px 16px; padding: 20px 20px 18px; }
+
+.summary-eyebrow{ margin-bottom: 8px; }
+.summary-title{ font-family: var(--display); font-weight: 500; font-size: 21px; line-height:1.3; letter-spacing:-0.01em; margin-bottom:18px; }
+.summary-title .accent{ font-style: italic; }
+
+.barchart{ display:flex; flex-direction:column; gap:12px; }
+.bar-row{ display:grid; grid-template-columns: 58px 1fr 38px; align-items:center; gap:10px; cursor:default; }
+.bar-row .bar-label{ font-family: var(--mono); font-size:11px; letter-spacing:0.04em; color: var(--ink-dim); transition: color 0.15s ease; }
+.bar-track{ position:relative; height: 14px; background: var(--hairline); border-radius: 999px; overflow:hidden; }
+.bar-fill{
+  position:absolute; left:0; top:0; bottom:0; border-radius:999px;
+  width: 0%;
+  transition: width 0.9s cubic-bezier(.2,.8,.2,1), filter 0.15s ease, box-shadow 0.15s ease;
+}
+.bar-row:hover .bar-fill, .bar-row.hovered .bar-fill{ filter: brightness(1.12); box-shadow: 0 0 0 2px rgba(34,31,25,0.08); }
+.bar-row:hover .bar-label, .bar-row.hovered .bar-label{ color: var(--ink); font-weight:700; }
+.bar-value{ font-family: var(--mono); font-size:11.5px; color: var(--ink-faint); text-align:right; transition: color 0.15s ease; }
+.bar-row:hover .bar-value, .bar-row.hovered .bar-value{ color: var(--ink); }
+
+.tabbar-wrap{ padding: 0 20px; margin-bottom: 4px; }
+.tabbar{ display:flex; gap:4px; background: var(--card); border:1px solid var(--hairline); border-radius: 999px; padding: 5px; }
+.tab-btn{
+  flex:1; background:none; border:none; color: var(--ink-faint);
+  font-family: var(--body); font-weight:700; font-size: 12px;
+  padding: 10px 4px; cursor:pointer; border-radius: 999px;
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  transition: color 0.2s ease, background 0.2s ease;
+  position:relative;
+}
+.tab-btn svg{ width:16px; height:16px; opacity:0.65; transition: opacity 0.2s ease; }
+.tab-btn.active{ color: var(--ink); background: var(--card-2); box-shadow: 0 2px 8px -4px rgba(60,50,30,0.3); }
+.tab-btn.active svg{ opacity:1; }
+.tab-btn.locked-tab{ color: var(--ink-faint); }
+.tab-btn .lock-dot{
+  position:absolute; top:6px; right: 22%; width:6px; height:6px; border-radius:50%;
+  background: var(--earth); box-shadow: 0 0 0 0 rgba(169,124,52,0.55);
+  animation: pulse-glow 2.4s infinite;
+}
+@keyframes pulse-glow{
+  0%{ box-shadow: 0 0 0 0 rgba(169,124,52,0.45); }
+  70%{ box-shadow: 0 0 0 7px rgba(169,124,52,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(169,124,52,0); }
+}
+
+.tab-content-viewport{ padding: 14px 20px 0; }
+.tab-panel{ display:none; animation: slide-in 0.32s cubic-bezier(.2,.85,.3,1); }
+.tab-panel.active{ display:block; }
+@keyframes slide-in{ from{ opacity:0; transform: translateX(10px);} to{opacity:1; transform:translateX(0);} }
+
+.content-card{ padding: 22px 20px 24px; }
+.panel-eyebrow{ margin-bottom:10px; }
+.panel-heading{ font-family: var(--display); font-size: 19px; font-weight:500; line-height:1.35; margin-bottom:14px; }
+.panel-body{ color: var(--ink-dim); font-size: 14.5px; line-height:1.7; margin-bottom: 18px; }
+
+.locked-panel{ position:relative; }
+.locked-preview{
+  border-radius: var(--r-sm);
+  overflow:hidden; position:relative;
+  border:1px solid var(--hairline);
+  background: var(--card-2);
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+.locked-preview .chart-blur{ filter: blur(5px); opacity:0.6; pointer-events:none; }
+.locked-overlay{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px; background: linear-gradient(180deg, rgba(243,239,230,0.35), rgba(243,239,230,0.82));
+}
+.lock-badge{
+  width:38px; height:38px; border-radius:50%; background: var(--card-2);
+  border: 1px solid var(--hairline-strong);
+  display:flex; align-items:center; justify-content:center; color: var(--earth);
+}
+.lock-badge svg{ width:16px; height:16px; }
+.locked-overlay p{ font-family: var(--mono); font-size:11px; color: var(--ink-dim); letter-spacing:0.05em; text-transform:uppercase; }
+
+.unlock-cta{
+  width:100%; background: linear-gradient(135deg, var(--earth), #8f6a2c);
+  color: #FBF3E4; font-weight:800; border:none; border-radius:999px;
+  padding:15px 20px; font-family: var(--body); font-size:14px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  box-shadow: 0 8px 22px -10px rgba(169,124,52,0.55);
+  transition: transform 0.15s ease;
+}
+.unlock-cta:active{ transform: scale(0.97); }
+.unlock-cta svg{ width:15px; height:15px; }
+
+.stat-row{ display:flex; gap:10px; margin-bottom:18px; }
+.stat-chip{ flex:1; background: var(--card-2); border:1px solid var(--hairline); border-radius: var(--r-sm); padding: 12px 14px; }
+.stat-chip .k{ font-family: var(--mono); font-size:10px; color: var(--ink-faint); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px; }
+.stat-chip .v{ font-family: var(--display); font-size:16px; }
+
+.autocomplete{ position:relative; }
+.ac-dropdown{
+  position:absolute; top: calc(100% + 6px); left:0; right:0;
+  background: var(--card-2); border:1px solid var(--hairline-strong); border-radius: var(--r-sm);
+  overflow:hidden; z-index:20; max-height: 220px; overflow-y:auto;
+  box-shadow: 0 12px 30px -10px rgba(60,50,30,0.25);
+}
+.ac-item{ padding: 12px 14px; font-size:14px; cursor:pointer; border-bottom:1px solid var(--hairline); display:flex; justify-content:space-between; }
+.ac-item:last-child{ border-bottom:none; }
+.ac-item:hover, .ac-item.hl{ background: var(--bg-alabaster); }
+.ac-item .city-country{ color: var(--ink-faint); font-family: var(--mono); font-size:11px; }
+.ac-empty{
+  padding: 14px; font-size: 12.5px; color: var(--ink-dim); line-height:1.6; background: var(--card-2);
+  border:1px solid var(--hairline-strong); border-radius: var(--r-sm); margin-top:6px;
+}
+
+.deep-onboard-header{ padding: 26px 24px 6px; }
+.deep-onboard-header .back-btn{
+  background:none; border:none; color: var(--ink-faint); font-family:var(--mono); font-size:11px;
+  cursor:pointer; display:flex; align-items:center; gap:6px; margin-bottom: 18px;
+}
+.deep-onboard-header h2{ font-family: var(--display); font-size:23px; font-weight:500; margin-bottom:8px; }
+.deep-onboard-header p{ color:var(--ink-dim); font-size:13.5px; line-height:1.55; margin-bottom: 24px; }
+.deep-onboard-body{ padding: 0 24px 26px; display:flex; flex-direction:column; gap:18px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <section class="screen active" id="screen-onboard">
+    <div>
+      <svg class="mark" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="23" cy="23" r="21" stroke="#5E8A4C" stroke-width="1.1" opacity="0.75"/>
+        <circle cx="23" cy="23" r="15" stroke="#BD5B3B" stroke-width="1.1" opacity="0.75"/>
+        <circle cx="23" cy="23" r="9" stroke="#35708E" stroke-width="1.1" opacity="0.75"/>
+        <circle cx="23" cy="23" r="2.4" fill="#A97C34"/>
+      </svg>
+      <div class="onboard-copy">
+        <h1>What are you made of?</h1>
+        <p>One date reveals your elemental core. Add your birth time later to unlock how it moves through career and wealth.</p>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="in-birthdate">Date of birth</label>
+        <input type="date" id="in-birthdate" placeholder="DD/MM/YYYY" />
+      </div>
+
+      <div class="optional-toggle">
+        <button class="btn-link" id="btn-toggle-optional" type="button">+ Add birth time &amp; city for deeper insight</button>
+      </div>
+
+      <div class="optional-fields" id="optional-fields">
+        <div class="optional-fields-inner">
+          <div>
+            <label class="field-label" for="in-birthtime">Birth time</label>
+            <input type="time" id="in-birthtime" />
+          </div>
+          <div class="autocomplete">
+            <label class="field-label" for="in-city">Birth city</label>
+            <input type="text" id="in-city" placeholder="Start typing a city…" autocomplete="off" />
+            <div class="ac-dropdown" id="ac-dropdown" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="onboard-footer">
+      <button class="btn btn-primary" id="btn-reveal">Reveal my profile</button>
+      <p class="trust-note">Your data stays on this device. Nothing is shared.</p>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-deep">
+    <div class="deep-onboard-header">
+      <button class="back-btn" id="btn-deep-back">&larr; Back to dashboard</button>
+      <h2>Pinpoint the hour.</h2>
+      <p>Your Hour Pillar governs career trajectory and late-life fortune. It needs an exact time and place to calculate.</p>
+    </div>
+    <div class="deep-onboard-body">
+      <div>
+        <label class="field-label" for="in-birthtime-2">Birth time</label>
+        <input type="time" id="in-birthtime-2" />
+      </div>
+      <div class="autocomplete">
+        <label class="field-label" for="in-city-2">Birth city</label>
+        <input type="text" id="in-city-2" placeholder="Start typing a city…" autocomplete="off" />
+        <div class="ac-dropdown" id="ac-dropdown-2" style="display:none;"></div>
+      </div>
+      <button class="btn btn-primary" id="btn-deep-submit" style="margin-top:8px;">Unlock deep insights</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-dashboard">
+    <div class="dash-top">
+      <div class="dash-top-row">
+        <svg class="dash-mark" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="23" cy="23" r="21" stroke="#5E8A4C" stroke-width="1.3" opacity="0.75"/>
+          <circle cx="23" cy="23" r="15" stroke="#BD5B3B" stroke-width="1.3" opacity="0.75"/>
+          <circle cx="23" cy="23" r="9" stroke="#35708E" stroke-width="1.3" opacity="0.75"/>
+          <circle cx="23" cy="23" r="2.4" fill="#A97C34"/>
+        </svg>
+        <button class="dash-reset" id="btn-reset">START OVER</button>
+      </div>
+    </div>
+
+    <div class="card balance-card">
+      <div class="summary-eyebrow eyebrow" id="summary-eyebrow">CORE PROFILE</div>
+      <div class="summary-title" id="summary-title">—</div>
+      <div class="barchart" id="barchart"></div>
+    </div>
+
+    <div class="tabbar-wrap">
+      <nav class="tabbar" id="tabbar">
+        <button class="tab-btn active" data-tab="romance" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20s-7.5-4.6-10-9.3C.5 7 2.3 3.5 6 3c2.3-.3 4.2 1 6 3.2C13.8 4 15.7 2.7 18 3c3.7.5 5.5 4 4 7.7C19.5 15.4 12 20 12 20z"/></svg>
+          Romance
+        </button>
+        <button class="tab-btn" data-tab="health" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3c-2 3-3 5.5-3 8a3 3 0 0 0 6 0c0-2.5-1-5-3-8z"/><path d="M6.5 21c0-4 2.5-6.5 5.5-6.5s5.5 2.5 5.5 6.5"/></svg>
+          Health
+        </button>
+        <button class="tab-btn locked-tab" data-tab="career" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="1.5"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Career
+          <span class="lock-dot" id="lock-dot-career"></span>
+        </button>
+        <button class="tab-btn locked-tab" data-tab="wealth" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="5.5"/><circle cx="15" cy="15" r="5.5"/></svg>
+          Wealth
+          <span class="lock-dot" id="lock-dot-wealth"></span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="tab-content-viewport">
+      <div class="tab-panel active" id="panel-romance"></div>
+      <div class="tab-panel" id="panel-health"></div>
+      <div class="tab-panel" id="panel-career"></div>
+      <div class="tab-panel" id="panel-wealth"></div>
+    </div>
+  </section>
+
+  <div class="modal-veil" id="soft-gate-modal">
+    <div class="modal-card">
+      <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5l3.2 1.9"/></svg>
+      <h3>Missing your birth time</h3>
+      <p>Without it, we can't calculate your <strong>Hour Pillar</strong> — the piece that governs career and late-life fortune. You'll still get your core personality reading, but career and wealth stay locked.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-proceed-basic">Proceed with basic profile</button>
+        <button class="btn btn-primary" id="btn-add-time">Add time now</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CITIES = [
+  {name:"Singapore", country:"SGP"}, {name:"Hong Kong", country:"HKG"},
+  {name:"Tokyo", country:"JPN"}, {name:"Shanghai", country:"CHN"},
+  {name:"Beijing", country:"CHN"}, {name:"Taipei", country:"TWN"},
+  {name:"Seoul", country:"KOR"}, {name:"Bangkok", country:"THA"},
+  {name:"Kuala Lumpur", country:"MYS"}, {name:"Manila", country:"PHL"},
+  {name:"Jakarta", country:"IDN"}, {name:"Mumbai", country:"IND"},
+  {name:"Delhi", country:"IND"}, {name:"London", country:"GBR"},
+  {name:"Paris", country:"FRA"}, {name:"Berlin", country:"DEU"},
+  {name:"Madrid", country:"ESP"}, {name:"Rome", country:"ITA"},
+  {name:"New York", country:"USA"}, {name:"Los Angeles", country:"USA"},
+  {name:"Chicago", country:"USA"}, {name:"Toronto", country:"CAN"},
+  {name:"Vancouver", country:"CAN"}, {name:"Sydney", country:"AUS"},
+  {name:"Melbourne", country:"AUS"}, {name:"Auckland", country:"NZL"},
+  {name:"Dubai", country:"ARE"}, {name:"Cairo", country:"EGY"},
+  {name:"Lagos", country:"NGA"}, {name:"Nairobi", country:"KEN"},
+  {name:"Johannesburg", country:"ZAF"}, {name:"Sao Paulo", country:"BRA"},
+  {name:"Mexico City", country:"MEX"}, {name:"Buenos Aires", country:"ARG"},
+];
+
+const ELEMENTS = ["wood","fire","earth","metal","water"];
+const ELEMENT_META = {
+  wood:  {label:"Wood",  short:"WOOD",  color:"var(--wood)"},
+  fire:  {label:"Fire",  short:"FIRE",  color:"var(--fire)"},
+  earth: {label:"Earth", short:"EARTH", color:"var(--earth)"},
+  metal: {label:"Metal", short:"METAL", color:"var(--metal)"},
+  water: {label:"Water", short:"WATER", color:"var(--water)"},
+};
+
+const ELEMENT_TEXT = {
+  wood:{
+    romance:"You love the way a tree loves — reaching outward, always growing the bond rather than settling into it. Partners feel your steady, expansive warmth, but you can outgrow connections that stop stretching with you.",
+    health:"Vitality flows through your tendons and decision-making organs. Movement — real movement, not just intention — keeps your energy from turning brittle. Stagnation is your body's least favorite word.",
+    career:"You thrive where there's room to expand: building, planting, initiating. Rigid hierarchies frustrate you; you do your best work when you're allowed to grow the role, not just fill it.",
+    wealth:"Your money grows the way you do — slowly, then suddenly. You're better at cultivating long-term value than chasing quick wins, though impatience can tempt you to pull up the roots too early.",
+  },
+  fire:{
+    romance:"You love loudly and visibly. Chemistry matters enormously to you, and you'd rather burn brightly for a short season than dim yourself for stability. Partners either match your heat or feel scorched by it.",
+    health:"Your circulatory system and heart carry your signature. Passion fuels you, but unchecked intensity burns through your reserves fast — rest isn't optional, it's fuel.",
+    career:"You're the spark in the room: charismatic, quick, magnetic to opportunity. You do best in visible, expressive roles, and worst in ones that ask you to stay quiet and wait your turn.",
+    wealth:"Money moves fast around you — earned in bursts, spent with flair. Building lasting wealth means pairing your instinct for opportunity with someone (or something) that can bank the embers.",
+  },
+  earth:{
+    romance:"You love like ground you can build a house on. Steady, dependable, unglamorous in the best way — you're the partner people come home to, not just the one they chase.",
+    health:"Your digestive center is your barometer. When you're overextended caring for everyone else, it shows up first in your gut. Nourishment, including your own, is not indulgence.",
+    career:"You're the stabilizer — the one who makes plans actually work. Reliable execution is your edge; just watch for being handed everyone else's unfinished business because you never say no.",
+    wealth:"You save before you spend and plan before you leap. Your wealth grows through patience and diversification rather than bold bets — steady compounding is your natural mode.",
+  },
+  metal:{
+    romance:"You love with precision — you notice details others miss and hold high standards for what a relationship should be. That clarity is a gift, but it can read as distance if you don't name what you feel.",
+    health:"Your lungs and skin carry your tension first. Structure and clean air calm you; chaos and clutter — physical or emotional — drain you faster than almost anything else.",
+    career:"You bring order to disorder. Editing, refining, systems, quality control — you make things sharper. You do poorly in loose, undefined roles with no clear standard to meet.",
+    wealth:"You're disciplined with money to the point of austerity sometimes. You rarely overspend, and your instinct to cut what isn't working serves your portfolio as well as your closet.",
+  },
+  water:{
+    romance:"You love the way water moves — adapting to whoever you're with, reading what they need before they say it. That flexibility draws people in, but you can lose your own shape if you're not careful.",
+    health:"Your kidneys and adrenal reserves are your tell. You run on deep reserves rather than quick bursts, which means burnout, when it comes, comes from the bottom up. Protect your sleep.",
+    career:"You're the strategist — comfortable with ambiguity, good at finding the path of least resistance to a goal. You underperform in rigid, script-driven roles that don't let you improvise.",
+    wealth:"Your money finds unconventional channels — you're drawn to opportunities others overlook. The risk is spreading too thin; depth in a few currents beats width across all of them.",
+  }
+};
+
+const LIFE_PATH_TEXT = {
+  1:"an independent starter — you'd rather build the first version yourself than wait for consensus.",
+  2:"a natural mediator — you sense what a room needs before it's said out loud.",
+  3:"expressive by design — your ideas want an audience, not just a notebook.",
+  4:"built for the long haul — structure isn't a constraint to you, it's how things get real.",
+  5:"wired for change — routine is the fastest way to lose your interest entirely.",
+  6:"responsible to your core — people orbit you because you actually show up.",
+  7:"an investigator at heart — you trust what you've examined over what you've been told.",
+  8:"oriented toward scale — you think in systems, leverage, and long games.",
+  9:"finishing what others start — you see the whole arc before most people see the first act.",
+  11:"intuitive to an unusual degree — you often know before you can explain why.",
+  22:"a builder of lasting things — your ideas are rarely small in scope.",
+  33:"guided by care for others — your gift is making people feel genuinely seen.",
+};
+
+let state = { birthdate:null, birthtime:null, city:null, unlocked:false };
+
+function lifePathNumber(dateStr){
+  const digits = dateStr.replace(/-/g,'').split('').map(Number);
+  let sum = digits.reduce((a,b)=>a+b,0);
+  const reduce = n => {
+    while(n>9 && n!==11 && n!==22 && n!==33){
+      n = String(n).split('').reduce((a,b)=>a+Number(b),0);
+    }
+    return n;
+  };
+  return reduce(sum);
+}
+
+function elementFromYear(year){
+  const last = year % 10;
+  if(last===0||last===1) return "metal";
+  if(last===2||last===3) return "water";
+  if(last===4||last===5) return "wood";
+  if(last===6||last===7) return "fire";
+  return "earth";
+}
+
+function seedFromString(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+  return h;
+}
+
+function elementalBalance(dateStr, dominant){
+  const seed = seedFromString(dateStr);
+  const rand = (i)=> ((seed >> (i*3)) % 17) / 17;
+  let vals = {};
+  ELEMENTS.forEach((el,i)=>{ vals[el] = 8 + Math.floor(rand(i)*18); });
+  vals[dominant] += 34;
+  const total = Object.values(vals).reduce((a,b)=>a+b,0);
+  ELEMENTS.forEach(el=> vals[el] = Math.round(vals[el]/total*100));
+  const diff = 100 - Object.values(vals).reduce((a,b)=>a+b,0);
+  vals[dominant] += diff;
+  return vals;
+}
+
+function renderBarChart(balance){
+  const sorted = [...ELEMENTS].sort((a,b)=> balance[b]-balance[a]);
+  return sorted.map(el=>{
+    const meta = ELEMENT_META[el];
+    return `
+    <div class="bar-row" data-el="${el}">
+      <div class="bar-label">${meta.short}</div>
+      <div class="bar-track">
+        <div class="bar-fill" data-target="${balance[el]}" style="background:${meta.color};"></div>
+      </div>
+      <div class="bar-value">${balance[el]}%</div>
+    </div>`;
+  }).join('');
+}
+
+function animateBars(){
+  document.querySelectorAll('.bar-fill').forEach(fill=>{
+    const target = fill.dataset.target;
+    requestAnimationFrame(()=>{ fill.style.width = target + '%'; });
+  });
+}
+
+function computeProfile(){
+  const d = new Date(state.birthdate + 'T00:00:00');
+  const year = d.getFullYear();
+  const dominant = elementFromYear(year);
+  const lp = lifePathNumber(state.birthdate);
+  const balance = elementalBalance(state.birthdate, dominant);
+  return {dominant, lp, balance};
+}
+
+function renderDashboard(){
+  const {dominant, lp, balance} = computeProfile();
+  document.getElementById('summary-title').innerHTML =
+    `Balanced <span class="accent">${ELEMENT_META[dominant].label}</span> Element &nbsp;/&nbsp; Life Path ${lp}`;
+
+  document.getElementById('barchart').innerHTML = renderBarChart(balance);
+  animateBars();
+  bindBarHover();
+
+  renderPanel('romance', dominant, lp, false);
+  renderPanel('health', dominant, lp, false);
+  renderPanel('career', dominant, lp, !state.unlocked);
+  renderPanel('wealth', dominant, lp, !state.unlocked);
+
+  document.getElementById('lock-dot-career').style.display = state.unlocked ? 'none' : 'block';
+  document.getElementById('lock-dot-wealth').style.display = state.unlocked ? 'none' : 'block';
+
+  const careerTab = document.querySelector('.tab-btn[data-tab="career"]');
+  const wealthTab = document.querySelector('.tab-btn[data-tab="wealth"]');
+  [careerTab, wealthTab].forEach(t=> t.classList.toggle('locked-tab', !state.unlocked));
+}
+
+function bindBarHover(){
+  document.querySelectorAll('.bar-row').forEach(row=>{
+    row.addEventListener('mouseenter', ()=> row.classList.add('hovered'));
+    row.addEventListener('mouseleave', ()=> row.classList.remove('hovered'));
+    row.addEventListener('touchstart', ()=>{
+      document.querySelectorAll('.bar-row').forEach(r=>r.classList.remove('hovered'));
+      row.classList.add('hovered');
+    }, {passive:true});
+  });
+}
+
+function renderPanel(tab, dominant, lp, locked){
+  const el = document.getElementById('panel-'+tab);
+  const domainLabel = {romance:"Romance",health:"Health",career:"Career",wealth:"Wealth"}[tab];
+  const lpText = LIFE_PATH_TEXT[lp] || LIFE_PATH_TEXT[reduceToBase(lp)];
+
+  if(locked){
+    el.innerHTML = `
+      <div class="locked-panel content-card card">
+        <div class="panel-eyebrow eyebrow">${domainLabel.toUpperCase()} · LOCKED</div>
+        <div class="panel-heading">Your Hour Pillar decides this one.</div>
+        <div class="locked-preview">
+          <div class="chart-blur barchart">${renderBarChart(computeProfile().balance)}</div>
+          <div class="locked-overlay">
+            <div class="lock-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            </div>
+            <p>Full chart hidden</p>
+          </div>
+        </div>
+        <button class="unlock-cta" data-open-unlock="1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.2 5 5.8.5-4.4 3.9L17 18l-5-3-5 3 1.4-5.6L4 8.5l5.8-.5z"/></svg>
+          Unlock deep insights with birth time &amp; city
+        </button>
+      </div>`;
+    el.querySelectorAll('.chart-blur .bar-fill').forEach(f=>{ f.style.width = f.dataset.target + '%'; });
+  } else {
+    const text = ELEMENT_TEXT[dominant][tab];
+    el.innerHTML = `
+      <div class="content-card card">
+        <div class="panel-eyebrow eyebrow">${domainLabel.toUpperCase()}</div>
+        <div class="panel-heading">${ELEMENT_META[dominant].label} energy, read for ${domainLabel.toLowerCase()}</div>
+        <div class="stat-row">
+          <div class="stat-chip"><div class="k">Element</div><div class="v">${ELEMENT_META[dominant].label}</div></div>
+          <div class="stat-chip"><div class="k">Life Path</div><div class="v">${lp}</div></div>
+        </div>
+        <p class="panel-body">${text}</p>
+        <p class="panel-body">As a Life Path ${lp}, you're ${lpText}</p>
+      </div>
+    `;
+  }
+
+  el.querySelectorAll('[data-open-unlock]').forEach(btn=>{
+    btn.addEventListener('click', ()=> showScreen('screen-deep'));
+  });
+}
+
+function reduceToBase(n){
+  if(n===11) return 2; if(n===22) return 4; if(n===33) return 6;
+  return n;
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+document.getElementById('tabbar').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.tab-btn');
+  if(!btn) return;
+  const tab = btn.dataset.tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+});
+
+const optionalToggle = document.getElementById('btn-toggle-optional');
+const optionalFields = document.getElementById('optional-fields');
+optionalToggle.addEventListener('click', ()=>{
+  const open = optionalFields.classList.toggle('open');
+  optionalToggle.textContent = open ? '– Hide extra details' : '+ Add birth time & city for deeper insight';
+});
+
+function setupAutocomplete(inputId, dropdownId){
+  const input = document.getElementById(inputId);
+  const dropdown = document.getElementById(dropdownId);
+  input.addEventListener('input', ()=>{
+    const q = input.value.trim().toLowerCase();
+    if(q.length < 2){ dropdown.style.display='none'; return; }
+    const matches = CITIES.filter(c=> c.name.toLowerCase().includes(q)).slice(0,6);
+    if(matches.length === 0){
+      dropdown.style.display='block';
+      dropdown.innerHTML = `<div class="ac-empty">Can't find your town? Try typing the nearest major city or regional capital instead. This keeps your timezone calculation accurate.</div>`;
+    } else {
+      dropdown.style.display='block';
+      dropdown.innerHTML = matches.map(c=>`
+        <div class="ac-item" data-city="${c.name}">
+          <span>${c.name}</span><span class="city-country">${c.country}</span>
+        </div>`).join('');
+      dropdown.querySelectorAll('.ac-item').forEach(item=>{
+        item.addEventListener('click', ()=>{
+          input.value = item.dataset.city;
+          dropdown.style.display='none';
+        });
+      });
+    }
+  });
+  document.addEventListener('click', (e)=>{
+    if(!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.style.display='none';
+  });
+}
+setupAutocomplete('in-city','ac-dropdown');
+setupAutocomplete('in-city-2','ac-dropdown-2');
+
+const modal = document.getElementById('soft-gate-modal');
+function openModal(){ modal.classList.add('active'); }
+function closeModal(){ modal.classList.remove('active'); }
+
+document.getElementById('btn-reveal').addEventListener('click', ()=>{
+  const dob = document.getElementById('in-birthdate').value;
+  if(!dob){
+    document.getElementById('in-birthdate').focus();
+    return;
+  }
+  state.birthdate = dob;
+  const time = document.getElementById('in-birthtime').value;
+  const city = document.getElementById('in-city').value;
+
+  if(!time || !city){
+    openModal();
+    return;
+  }
+  state.birthtime = time;
+  state.city = city;
+  state.unlocked = true;
+  renderDashboard();
+  showScreen('screen-dashboard');
+});
+
+document.getElementById('btn-proceed-basic').addEventListener('click', ()=>{
+  closeModal();
+  state.unlocked = false;
+  renderDashboard();
+  showScreen('screen-dashboard');
+});
+
+document.getElementById('btn-add-time').addEventListener('click', ()=>{
+  closeModal();
+  if(!optionalFields.classList.contains('open')){
+    optionalFields.classList.add('open');
+    optionalToggle.textContent = '– Hide extra details';
+  }
+  document.getElementById('in-birthtime').focus();
+});
+
+document.getElementById('btn-deep-back').addEventListener('click', ()=> showScreen('screen-dashboard'));
+
+document.getElementById('btn-deep-submit').addEventListener('click', ()=>{
+  const time = document.getElementById('in-birthtime-2').value;
+  const city = document.getElementById('in-city-2').value;
+  if(!time || !city){
+    (!time ? document.getElementById('in-birthtime-2') : document.getElementById('in-city-2')).focus();
+    return;
+  }
+  state.birthtime = time;
+  state.city = city;
+  state.unlocked = true;
+  renderDashboard();
+  showScreen('screen-dashboard');
+});
+
+document.getElementById('btn-reset').addEventListener('click', ()=>{
+  state = { birthdate:null, birthtime:null, city:null, unlocked:false };
+  document.getElementById('in-birthdate').value='';
+  document.getElementById('in-birthtime').value='';
+  document.getElementById('in-city').value='';
+  document.getElementById('in-birthtime-2').value='';
+  document.getElementById('in-city-2').value='';
+  optionalFields.classList.remove('open');
+  optionalToggle.textContent = '+ Add birth time & city for deeper insight';
+  showScreen('screen-onboard');
+});
+</script>
+</body>
+</html>
