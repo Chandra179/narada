@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { CityAutocomplete } from './CityAutocomplete';
 import { MarkIcon } from './icons';
 
@@ -19,32 +19,31 @@ export function OnboardScreen({
   onReveal,
   onAddTimeAcknowledged,
 }: OnboardScreenProps) {
-  const [birthdate, setBirthdate] = useState(initialBirthdate);
+  const [birthdate, setBirthdate] = useState(initialBirthdate || '1990-01-01');
   const [birthtime, setBirthtime] = useState(initialBirthtime);
   const [city, setCity] = useState(initialCity);
   const [optionalOpen, setOptionalOpen] = useState(Boolean(initialBirthtime || initialCity));
 
   useEffect(() => {
+    if (initialBirthdate) setBirthdate(initialBirthdate);
+  }, [initialBirthdate]);
+
+  const handleReveal = useCallback(() => {
+    if (!birthdate) return;
+    const unlocked = Boolean(birthtime && city);
+    onReveal({ birthdate, birthtime, city, unlocked });
+  }, [birthdate, birthtime, city, onReveal]);
+
+  useEffect(() => {
     if (pendingAddTime) {
       setOptionalOpen(true);
       onAddTimeAcknowledged?.();
-      // Defer focus until the optional fields have expanded.
       const timer = setTimeout(() => {
         document.getElementById('in-birthtime')?.focus();
       }, 360);
       return () => clearTimeout(timer);
     }
   }, [pendingAddTime, onAddTimeAcknowledged]);
-
-  function handleReveal() {
-    if (!birthdate) {
-      document.getElementById('in-birthdate')?.focus();
-      return;
-    }
-
-    const unlocked = Boolean(birthtime && city);
-    onReveal({ birthdate, birthtime, city, unlocked });
-  }
 
   return (
     <section className="flex flex-col min-h-[640px] px-[26px] pt-11 pb-[30px] justify-between">
@@ -60,13 +59,12 @@ export function OnboardScreen({
         </div>
 
         <div className="mb-[18px]">
-          <label className="field-label" htmlFor="in-birthdate">
-            Date of birth
-          </label>
+          <span className="field-label">Date of birth</span>
           <input
-            id="in-birthdate"
             type="date"
             value={birthdate}
+            min="1900-01-01"
+            max={new Date().toISOString().split('T')[0]}
             onChange={(e) => setBirthdate(e.target.value)}
           />
         </div>

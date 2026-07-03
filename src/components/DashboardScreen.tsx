@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { BarChart } from './BarChart';
 import {
   CareerIcon,
@@ -15,8 +15,13 @@ import {
   type ElementKey,
   type TabKey,
 } from '../lib/constants';
-import { computeProfile, reduceToBase, type ElementalBalance } from '../lib/calculations';
+import {
+  reduceToBase,
+  type ElementalBalance,
+  type Profile,
+} from '../lib/calculations';
 import { LIFE_PATH_TEXT } from '../lib/constants';
+import { fetchProfile } from '../lib/api';
 
 const TAB_CONFIG: { key: TabKey; label: string; icon: React.ElementType }[] = [
   { key: 'romance', label: 'Romance', icon: RomanceIcon },
@@ -42,7 +47,18 @@ export function DashboardScreen({
   onUnlock,
   onReset,
 }: DashboardScreenProps) {
-  const { dominant, lp, balance } = useMemo(() => computeProfile(birthdate), [birthdate]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(false);
+    fetchProfile(birthdate)
+      .then(setProfile)
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [birthdate]);
 
   return (
     <section className="flex flex-col min-h-[640px] pb-6 gap-3.5">
@@ -63,10 +79,20 @@ export function DashboardScreen({
         <div className="font-mono text-[11px] tracking-[0.14em] uppercase text-ink-faint mb-2">
           CORE PROFILE
         </div>
-        <h2 className="font-display font-medium text-[21px] leading-[1.3] tracking-tight mb-[18px]">
-          Balanced <span className="italic">{ELEMENT_META[dominant].label}</span> Element &nbsp;/&nbsp; Life Path {lp}
-        </h2>
-        <BarChart balance={balance} />
+        {loading && (
+          <p className="text-ink-dim text-sm">Loading your profile…</p>
+        )}
+        {error && (
+          <p className="text-ink-dim text-sm">Could not load profile. Make sure the server is running.</p>
+        )}
+        {profile && (
+          <>
+            <h2 className="font-display font-medium text-[21px] leading-[1.3] tracking-tight mb-[18px]">
+              Balanced <span className="italic">{ELEMENT_META[profile.dominant].label}</span> Element &nbsp;/&nbsp; Life Path {profile.lp}
+            </h2>
+            <BarChart balance={profile.balance} />
+          </>
+        )}
       </div>
 
       <div className="px-5 mb-1">
@@ -100,20 +126,22 @@ export function DashboardScreen({
         </nav>
       </div>
 
-      <div className="px-5 pt-3.5">
-        {TAB_CONFIG.map(({ key }) => (
-          <TabPanel
-            key={key}
-            tab={key}
-            isActive={activeTab === key}
-            dominant={dominant}
-            lp={lp}
-            balance={balance}
-            locked={(key === 'career' || key === 'wealth') && !unlocked}
-            onUnlock={onUnlock}
-          />
-        ))}
-      </div>
+      {profile && (
+        <div className="px-5 pt-3.5">
+          {TAB_CONFIG.map(({ key }) => (
+            <TabPanel
+              key={key}
+              tab={key}
+              isActive={activeTab === key}
+              dominant={profile.dominant}
+              lp={profile.lp}
+              balance={profile.balance}
+              locked={(key === 'career' || key === 'wealth') && !unlocked}
+              onUnlock={onUnlock}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
