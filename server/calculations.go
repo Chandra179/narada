@@ -335,6 +335,45 @@ func lifePathNumber(dateStr string) int {
 }
 
 // =============================================================================
+// Element Descriptions
+// =============================================================================
+
+func elementDescriptions() Descriptions {
+	return Descriptions{
+		"wood": {
+			"romance": "You love the way a tree loves — reaching outward, always growing the bond rather than settling into it. Partners feel your steady, expansive warmth, but you can outgrow connections that stop stretching with you.",
+			"health":  "Vitality flows through your tendons and decision-making organs. Movement — real movement, not just intention — keeps your energy from turning brittle. Stagnation is your body's least favorite word.",
+			"career":  "You thrive where there's room to expand: building, planting, initiating. Rigid hierarchies frustrate you; you do your best work when you're allowed to grow the role, not just fill it.",
+			"wealth":  "Your money grows the way you do — slowly, then suddenly. You're better at cultivating long-term value than chasing quick wins, though impatience can tempt you to pull up the roots too early.",
+		},
+		"fire": {
+			"romance": "You love loudly and visibly. Chemistry matters enormously to you, and you'd rather burn brightly for a short season than dim yourself for stability. Partners either match your heat or feel scorched by it.",
+			"health":  "Your circulatory system and heart carry your signature. Passion fuels you, but unchecked intensity burns through your reserves fast — rest isn't optional, it's fuel.",
+			"career":  "You're the spark in the room: charismatic, quick, magnetic to opportunity. You do best in visible, expressive roles, and worst in ones that ask you to stay quiet and wait your turn.",
+			"wealth":  "Money moves fast around you — earned in bursts, spent with flair. Building lasting wealth means pairing your instinct for opportunity with someone (or something) that can bank the embers.",
+		},
+		"earth": {
+			"romance": "You love like ground you can build a house on. Steady, dependable, unglamorous in the best way — you're the partner people come home to, not just the one they chase.",
+			"health":  "Your digestive center is your barometer. When you're overextended caring for everyone else, it shows up first in your gut. Nourishment, including your own, is not indulgence.",
+			"career":  "You're the stabilizer — the one who makes plans actually work. Reliable execution is your edge; just watch for being handed everyone else's unfinished business because you never say no.",
+			"wealth":  "You save before you spend and plan before you leap. Your wealth grows through patience and diversification rather than bold bets — steady compounding is your natural mode.",
+		},
+		"metal": {
+			"romance": "You love with precision — you notice details others miss and hold high standards for what a relationship should be. That clarity is a gift, but it can read as distance if you don't name what you feel.",
+			"health":  "Your lungs and skin carry your tension first. Structure and clean air calm you; chaos and clutter — physical or emotional — drain you faster than almost anything else.",
+			"career":  "You bring order to disorder. Editing, refining, systems, quality control — you make things sharper. You do poorly in loose, undefined roles with no clear standard to meet.",
+			"wealth":  "You're disciplined with money to the point of austerity sometimes. You rarely overspend, and your instinct to cut what isn't working serves your portfolio as well as your closet.",
+		},
+		"water": {
+			"romance": "You love the way water moves — adapting to whoever you're with, reading what they need before they say it. That flexibility draws people in, but you can lose your own shape if you're not careful.",
+			"health":  "Your kidneys and adrenal reserves are your tell. You run on deep reserves rather than quick bursts, which means burnout, when it comes, comes from the bottom up. Protect your sleep.",
+			"career":  "You're the strategist — comfortable with ambiguity, good at finding the path of least resistance to a goal. You underperform in rigid, script-driven roles that don't let you improvise.",
+			"wealth":  "Your money finds unconventional channels — you're drawn to opportunities others overlook. The risk is spreading too thin; depth in a few currents beats width across all of them.",
+		},
+	}
+}
+
+// =============================================================================
 // Main API
 // =============================================================================
 
@@ -411,16 +450,18 @@ func computeProfile(birthdate, birthtime string) Profile {
 	}
 
 	return Profile{
-		Dominant: dominant,
-		Lp:       lp,
-		Balance:  balance,
+		Dominant:     dominant,
+		Lp:           lp,
+		Balance:      balance,
+		Descriptions: elementDescriptions(),
 	}
 }
 
 func fallbackProfile() Profile {
 	return Profile{
-		Dominant: "earth",
-		Lp:       0,
-		Balance:  map[string]int{"wood": 20, "fire": 20, "earth": 20, "metal": 20, "water": 20},
+		Dominant:     "earth",
+		Lp:           0,
+		Balance:      map[string]int{"wood": 20, "fire": 20, "earth": 20, "metal": 20, "water": 20},
+		Descriptions: elementDescriptions(),
 	}
 }

@@ -30,6 +30,7 @@ export function OnboardScreen({
 
   const handleReveal = useCallback(() => {
     if (!birthdate) return;
+    console.log('[onboard] handleReveal', { birthdate, birthtime, city });
     const unlocked = Boolean(birthtime && city);
     onReveal({ birthdate, birthtime, city, unlocked });
   }, [birthdate, birthtime, city, onReveal]);
@@ -93,7 +94,10 @@ export function OnboardScreen({
                 id="in-birthtime"
                 type="time"
                 value={birthtime}
-                onChange={(e) => setBirthtime(e.target.value)}
+                onChange={(e) => {
+                  console.log('[time-input] onChange:', e.target.value);
+                  setBirthtime(e.target.value);
+                }}
               />
             </div>
             <div>

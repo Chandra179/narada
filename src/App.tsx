@@ -16,6 +16,7 @@ export default function App() {
     city: string;
     unlocked: boolean;
   }) {
+    console.log('[app] handleReveal:', data);
     if (!data.birthtime || !data.city) {
       updateState({
         birthdate: data.birthdate,
@@ -96,6 +97,7 @@ export default function App() {
         {state.screen === 'dashboard' && state.birthdate && (
           <DashboardScreen
             birthdate={state.birthdate}
+            birthtime={state.birthtime}
             unlocked={state.unlocked}
             activeTab={state.activeTab}
             onTabChange={handleTabChange}

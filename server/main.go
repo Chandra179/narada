@@ -6,10 +6,13 @@ import (
 	"net/http"
 )
 
+type Descriptions map[string]map[string]string
+
 type Profile struct {
-	Dominant string         `json:"dominant"`
-	Lp       int            `json:"lp"`
-	Balance  map[string]int `json:"balance"`
+	Dominant     string         `json:"dominant"`
+	Lp           int            `json:"lp"`
+	Balance      map[string]int `json:"balance"`
+	Descriptions Descriptions   `json:"descriptions"`
 }
 
 type profileRequest struct {
@@ -32,6 +35,8 @@ func handleProfile(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "birthdate required", http.StatusBadRequest)
 		return
 	}
+
+	log.Printf("profile request: birthdate=%q birthtime=%q", req.Birthdate, req.Birthtime)
 
 	profile := computeProfile(req.Birthdate, req.Birthtime)
 
