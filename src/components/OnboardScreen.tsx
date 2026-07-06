@@ -6,8 +6,9 @@ export type OnboardScreenProps = {
   initialBirthdate?: string;
   initialBirthtime?: string;
   initialCity?: string;
+  initialGender?: string;
   pendingAddTime?: boolean;
-  onReveal: (data: { birthdate: string; birthtime: string; city: string; unlocked: boolean }) => void;
+  onReveal: (data: { birthdate: string; birthtime: string; city: string; gender: string; unlocked: boolean }) => void;
   onAddTimeAcknowledged?: () => void;
 };
 
@@ -15,6 +16,7 @@ export function OnboardScreen({
   initialBirthdate = '',
   initialBirthtime = '',
   initialCity = '',
+  initialGender = '',
   pendingAddTime = false,
   onReveal,
   onAddTimeAcknowledged,
@@ -22,6 +24,7 @@ export function OnboardScreen({
   const [birthdate, setBirthdate] = useState(initialBirthdate || '1990-01-01');
   const [birthtime, setBirthtime] = useState(initialBirthtime);
   const [city, setCity] = useState(initialCity);
+  const [gender, setGender] = useState(initialGender);
   const [optionalOpen, setOptionalOpen] = useState(Boolean(initialBirthtime || initialCity));
 
   useEffect(() => {
@@ -30,10 +33,10 @@ export function OnboardScreen({
 
   const handleReveal = useCallback(() => {
     if (!birthdate) return;
-    console.log('[onboard] handleReveal', { birthdate, birthtime, city });
+    console.log('[onboard] handleReveal', { birthdate, birthtime, city, gender });
     const unlocked = Boolean(birthtime && city);
-    onReveal({ birthdate, birthtime, city, unlocked });
-  }, [birthdate, birthtime, city, onReveal]);
+    onReveal({ birthdate, birthtime, city, gender, unlocked });
+  }, [birthdate, birthtime, city, gender, onReveal]);
 
   useEffect(() => {
     if (pendingAddTime) {
@@ -99,6 +102,21 @@ export function OnboardScreen({
                   setBirthtime(e.target.value);
                 }}
               />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="in-gender">
+                Sex assigned at birth
+              </label>
+              <select
+                id="in-gender"
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="w-full h-11 px-3.5 rounded-[10px] border border-hairline bg-card text-ink text-[14.5px] appearance-none cursor-pointer"
+              >
+                <option value="">Select…</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
             </div>
             <div>
               <label className="field-label" htmlFor="in-city">

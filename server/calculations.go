@@ -8,14 +8,6 @@ import (
 
 // =============================================================================
 // Data tables — canonical Bazi / Wu Xing mappings
-// Sources:
-//   - Wikipedia "Heavenly Stems"  https://en.wikipedia.org/wiki/Heavenly_Stems
-//   - Wikipedia "Four Pillars of Destiny"  https://en.wikipedia.org/wiki/Four_Pillars_of_Destiny
-//   - Wikipedia "Sexagenary cycle"  https://en.wikipedia.org/wiki/Sexagenary_cycle
-//   - Hong Kong Observatory "Heavenly Stems and Earthly Branches"
-//     https://www.hko.gov.hk/en/gts/time/stemsandbranches.htm
-//   - Ho, Peng Yoke (2003). Chinese Mathematical Astrology. Routledge.
-//   - Yuan Hai Zi Ping (渊海子平), Song dynasty classical Bazi text by Xu Ziping
 // =============================================================================
 
 var heavenlyStems = [10]string{"Jia", "Yi", "Bing", "Ding", "Wu", "Ji", "Geng", "Xin", "Ren", "Gui"}
@@ -38,14 +30,338 @@ var hiddenStems = [12][]int{
 	{8, 0},       // Hai  亥 → Ren, Jia          壬 甲
 }
 
+var elementOrder = []string{"wood", "fire", "earth", "metal", "water"}
+
+var seasonTable = [12]struct {
+	season string
+	peak   string
+}{
+	{season: "winter", peak: "water"},     // Zi
+	{season: "winter", peak: "water"},     // Chou
+	{season: "spring", peak: "wood"},      // Yin
+	{season: "spring", peak: "wood"},      // Mao
+	{season: "spring", peak: "wood"},      // Chen
+	{season: "summer", peak: "fire"},      // Si
+	{season: "summer", peak: "fire"},      // Wu
+	{season: "summer", peak: "fire"},      // Wei
+	{season: "autumn", peak: "metal"},     // Shen
+	{season: "autumn", peak: "metal"},     // You
+	{season: "autumn", peak: "metal"},     // Xu
+	{season: "winter", peak: "water"},     // Hai
+}
+
+// jieTermForBranch maps each Earthly Branch to its starting jie solar term index.
+// branch 2 (Yin) starts at Lichun (index 0), etc.
+func jieTermForBranch(branch int) int {
+	return (branch - 2 + 12) % 12
+}
+
+// =============================================================================
+// Utilities
+// =============================================================================
+
+func stemYinYang(stem int) string {
+	if stem%2 == 0 {
+		return "yang"
+	}
+	return "yin"
+}
+
+func elementID(el string) int {
+	for i, e := range elementOrder {
+		if e == el {
+			return i
+		}
+	}
+	return -1
+}
+
+// productiveCycle returns the element produced by the given element index.
+// Wood→Fire→Earth→Metal→Water→Wood
+func productiveCycle(el int) int {
+	return (el + 1) % 5
+}
+
+// controllingCycle returns the element controlled by the given element index.
+// Wood→Earth→Water→Fire→Metal→Wood
+func controllingCycle(el int) int {
+	return (el + 2) % 5
+}
+
+// controlledBy returns the element that controls the given element.
+func controlledBy(el int) int {
+	return (el + 3) % 5
+}
+
+// =============================================================================
+// Ten Gods (十神)
+// =============================================================================
+
+// tenGod returns the Ten God name for a stem relative to the Day Master stem.
+func tenGod(dayStem, otherStem int) string {
+	dmEl := elementID(stemElement[dayStem])
+	otherEl := elementID(stemElement[otherStem])
+	dmYang := stemYinYang(dayStem)
+	otherYang := stemYinYang(otherStem)
+	samePolarity := dmYang == otherYang
+
+	if dmEl == otherEl {
+		if samePolarity {
+			return "Peer"
+		}
+		return "Rob Wealth"
+	}
+
+	if productiveCycle(dmEl) == otherEl {
+		if samePolarity {
+			return "Eating God"
+		}
+		return "Hurting Officer"
+	}
+
+	if productiveCycle(otherEl) == dmEl {
+		if samePolarity {
+			return "Direct Resource"
+		}
+		return "Indirect Resource"
+	}
+
+	if controllingCycle(dmEl) == otherEl {
+		if samePolarity {
+			return "Direct Wealth"
+		}
+		return "Indirect Wealth"
+	}
+
+	if controllingCycle(otherEl) == dmEl {
+		if samePolarity {
+			return "Direct Officer"
+		}
+		return "Seven Kill"
+	}
+
+	return "Other"
+}
+
+// =============================================================================
+// Seasonal Strength
+// =============================================================================
+
+// seasonalStrength returns a score from 0-4 for how strong an element is in a given season.
+// 4 = Peak (旺), 3 = Rising (相), 2 = Flat (休), 1 = Trapped (囚), 0 = Dying (死)
+func seasonalStrength(seasonPeak, element string) int {
+	peakID := elementID(seasonPeak)
+	elID := elementID(element)
+
+	// Same element → Peak
+	if peakID == elID {
+		return 4
+	}
+	// Produced by peak → Rising (peak produces this)
+	if productiveCycle(peakID) == elID {
+		return 3
+	}
+	// Produces the peak → Flat (this produces peak)
+	if productiveCycle(elID) == peakID {
+		return 2
+	}
+	// Controls the peak → Trapped (this controls peak but is out of season)
+	if controllingCycle(elID) == peakID {
+		return 1
+	}
+	// Controlled by peak → Dying (peak controls this)
+	return 0
+}
+
+// =============================================================================
+// Day Master Strength Analysis
+// =============================================================================
+
+func determineDMStrength(dmElement string, seasonPeak string, stems, branches []int) (string, string) {
+	dmID := elementID(dmElement)
+
+	seasonScore := seasonalStrength(seasonPeak, dmElement)
+
+	allyCount := 0
+	enemyCount := 0
+
+	for _, s := range stems {
+		elID := elementID(stemElement[s])
+		if elID == dmID || productiveCycle(elID) == dmID {
+			allyCount++
+		} else if controllingCycle(elID) == dmID {
+			enemyCount++
+		}
+	}
+	for _, b := range branches {
+		elID := elementID(branchElement[b])
+		if elID == dmID || productiveCycle(elID) == dmID {
+			allyCount++
+		} else if controllingCycle(elID) == dmID {
+			enemyCount++
+		}
+		for _, hs := range hiddenStems[b] {
+			hsID := elementID(stemElement[hs])
+			if hsID == dmID || productiveCycle(hsID) == dmID {
+				allyCount++
+			} else if controllingCycle(hsID) == dmID {
+				enemyCount++
+			}
+		}
+	}
+
+	strength := float64(seasonScore)*1.5 + float64(allyCount)*1.0 - float64(enemyCount)*0.8
+
+	var verdict, reasoning string
+	if strength >= 6.0 {
+		verdict = "strong"
+		reasoning = "The Day Master has strong seasonal support and multiple allies in the chart, making it robust and self-sufficient."
+	} else if strength <= 3.0 {
+		verdict = "weak"
+		reasoning = "The Day Master lacks seasonal support and has few allies, with significant controlling elements present."
+	} else {
+		verdict = "balanced"
+		reasoning = "The Day Master has moderate support — neither overwhelmingly strong nor critically weak."
+	}
+	return verdict, reasoning
+}
+
+// =============================================================================
+// Yong Shen (Useful God)
+// =============================================================================
+
+func determineYongShen(dmElement, dmStrength string) (YongShenInfo, []string, []string) {
+	dmID := elementID(dmElement)
+
+	var yongShenEl string
+	var reason string
+
+	switch dmStrength {
+	case "strong":
+		// Controlling element or output element
+		yongShenEl = elementOrder[controllingCycle(dmID)]
+		reason = "Strong " + dmElement + " DM needs " + yongShenEl + " to control and balance the excess energy."
+	case "weak":
+		// Producing element (resource)
+		yongShenEl = elementOrder[controlledBy(dmID)]
+		reason = "Weak " + dmElement + " DM needs " + yongShenEl + " to produce and nourish it."
+	default:
+		// Balanced — Yong Shen is the element that produces the DM
+		yongShenEl = elementOrder[controlledBy(dmID)]
+		reason = "Balanced " + dmElement + " DM benefits from " + yongShenEl + " to maintain harmony."
+	}
+
+	ysID := elementID(yongShenEl)
+
+	var favorable []string
+	var unfavorable []string
+
+	// Favorable: Yong Shen itself + elements that produce it
+	favorable = append(favorable, yongShenEl)
+	producerOfYS := elementOrder[controlledBy(ysID)]
+	if producerOfYS != yongShenEl {
+		favorable = append(favorable, producerOfYS)
+	}
+
+	// Unfavorable: elements that control or drain the Yong Shen
+	controllerOfYS := elementOrder[controllingCycle(ysID)]
+	unfavorable = append(unfavorable, controllerOfYS)
+	drainOfYS := elementOrder[productiveCycle(ysID)]
+	if drainOfYS != controllerOfYS {
+		unfavorable = append(unfavorable, drainOfYS)
+	}
+
+	return YongShenInfo{Element: yongShenEl, Reason: reason}, favorable, unfavorable
+}
+
+// =============================================================================
+// Luck Cycles (大运 / Da Yun)
+// =============================================================================
+
+// luckDirection returns true if Luck Pillars move forward through the sexagenary cycle.
+// Yang male + Yin female → forward (true)
+// Yin male + Yang female → backward (false)
+func luckDirection(yearStem int, gender string) bool {
+	stemIsYang := yearStem%2 == 0
+	male := gender == "male"
+	return (stemIsYang && male) || (!stemIsYang && !male)
+}
+
+// luckStartAge computes the starting age for the first Luck Pillar.
+// Days between birth and next/previous jie term, divided by 3.
+func luckStartAge(birthJDN float64, monthBranch int, forward bool, solarYear int) int {
+	currentJie := jieTermForBranch(monthBranch)
+	var targetJDN float64
+
+	if forward {
+		nextJie := (currentJie + 1) % 12
+		targetJDN = solarTermJDN(solarYear, nextJie)
+		if nextJie < currentJie {
+			targetJDN = solarTermJDN(solarYear+1, nextJie)
+		}
+	} else {
+		prevJie := (currentJie - 1 + 12) % 12
+		targetJDN = solarTermJDN(solarYear, prevJie)
+		if prevJie > currentJie {
+			targetJDN = solarTermJDN(solarYear-1, prevJie)
+		}
+	}
+
+	days := targetJDN - birthJDN
+	if days < 0 {
+		days = -days
+	}
+
+	age := int(math.Round(days / 3.0))
+	if age < 0 {
+		age = 0
+	}
+	if age > 10 {
+		age = 10
+	}
+	return age
+}
+
+func computeLuckCycles(monthStem, monthBranch int, forward bool, startAge int) []LuckCycle {
+	cycles := make([]LuckCycle, 0, 8)
+	step := 1
+	if !forward {
+		step = -1
+	}
+
+	stem := monthStem
+	branch := monthBranch
+	age := startAge
+
+	for i := 0; i < 8; i++ {
+		stem = (stem + step + 10) % 10
+		branch = (branch + step + 12) % 12
+
+		endAge := age + 9
+		if endAge > 120 {
+			endAge = 120
+		}
+
+		cycles = append(cycles, LuckCycle{
+			StartAge: age,
+			EndAge:   endAge,
+			Stem:     heavenlyStems[stem],
+			Branch:   earthlyBranches[branch],
+			Element:  stemElement[stem],
+		})
+
+		age = endAge + 1
+		if age > 120 {
+			break
+		}
+	}
+	return cycles
+}
+
 // =============================================================================
 // Gregorian ↔ Julian Day Number
 // =============================================================================
 
-// gregorianToJDN converts a Gregorian date to Julian Day Number at noon UTC.
-// Algorithm from https://en.wikipedia.org/wiki/Julian_day
-//
-// Returns the JDN at 12:00 UTC.  To get midnight-based JDN, subtract 0.5.
 func gregorianToJDN(year, month, day int) int {
 	a := (14 - month) / 12
 	y := year + 4800 - a
@@ -53,7 +369,6 @@ func gregorianToJDN(year, month, day int) int {
 	return day + (153*m+2)/5 + 365*y + y/4 - y/100 + y/400 - 32045
 }
 
-// midnightJDN returns the Julian Day Number at 00:00 UTC of the given date.
 func midnightJDN(year, month, day int) float64 {
 	return float64(gregorianToJDN(year, month, day)) - 0.5
 }
@@ -62,59 +377,31 @@ func midnightJDN(year, month, day int) float64 {
 // Solar Term Computation (节气)
 // =============================================================================
 
-// solarTermJDN returns the approximate Julian Day Number of the given jie
-// solar term for a given solar year.
-//
-// termIndex: 0=Lichun(立春), 1=Jingzhe(惊蛰), …, 11=Xiaohan(小寒).
-//
-// The 12 jie terms partition the solar year starting at Lichun. Terms 0–10
-// fall within the same calendar year; term 11 (Xiaohan) falls in January of
-// the following calendar year.
-//
-// Uses exact Gregorian calendar dates (handling leap years) plus a small
-// sub-day correction for the tropical-year drift.  Accuracy is ~6 hours for
-// years 1800–2200.
-//
-// Source: https://en.wikipedia.org/wiki/Solar_term
 func solarTermJDN(solarYear, termIndex int) float64 {
-	// Midnight JDN of Feb 4 in the given calendar year.
 	lichunMidnight := midnightJDN(solarYear, 2, 4)
 
-	// Lichun 2000 occurred at ~20:32 UTC (0.355 past the midnight of Feb 4).
-	// The tropical year (365.242189 d) is shorter than the calendar year
-	// (365.25 d mean), so Lichun shifts ~11 min earlier each year.
 	const referenceYear = 2000
-	const refLichunFrac = 0.355       // fraction of day past midnight
-	driftPerYear := 365.242189 - 365.25 // ≈ -0.007811 d/yr
+	const refLichunFrac = 0.355
+	driftPerYear := 365.242189 - 365.25
 
 	lichunJDN := lichunMidnight + refLichunFrac + float64(solarYear-referenceYear)*driftPerYear
 
-	// Offsets from Lichun to each subsequent jie term in year 2000.
 	offsets := [12]float64{0, 30, 60, 91, 122, 154, 185, 216, 247, 277, 307, 336}
 	return lichunJDN + offsets[termIndex]
 }
 
-// solarMonthBranch returns the Earthly Branch index (0=子 .. 11=亥) of the
-// solar month containing the given birth date and time.
-//
-// This is the central function that maps a Gregorian birth moment to a Bazi
-// month-branch.  It first determines the correct solar year by comparing
-// against the Lichun boundary, then scans the 12 jie-term intervals.
 func solarMonthBranch(year, month, day, hour, min int) int {
 	jdn := midnightJDN(year, month, day)
 	dayFrac := (float64(hour) + float64(min)/60.0) / 24.0
 	birthJDN := jdn + dayFrac
 
-	// Determine the solar year: if before this calendar year's Lichun,
-	// the birth is still part of the previous solar year.
 	solarYear := year
 	if birthJDN < solarTermJDN(year, 0) {
 		solarYear = year - 1
 	}
 
-	// Scan the 12 jie-term intervals that partition one solar year.
 	for i := 0; i < 12; i++ {
-		branch := (i + 2) % 12 // Lichun (i=0) → Yin (寅 = 2)
+		branch := (i + 2) % 12
 
 		start := solarTermJDN(solarYear, i)
 
@@ -122,7 +409,7 @@ func solarMonthBranch(year, month, day, hour, min int) int {
 		if i < 11 {
 			end = solarTermJDN(solarYear, i+1)
 		} else {
-			end = solarTermJDN(solarYear+1, 0) // next year's Lichun
+			end = solarTermJDN(solarYear+1, 0)
 		}
 
 		if birthJDN >= start && birthJDN < end {
@@ -130,7 +417,7 @@ func solarMonthBranch(year, month, day, hour, min int) int {
 		}
 	}
 
-	return 2 // fallback: Yin
+	return 2
 }
 
 // =============================================================================
@@ -148,24 +435,10 @@ func yearStemBranch(adjustedYear int) (stem, branch int) {
 // Month Pillar (月柱)
 // =============================================================================
 
-// fiveTigersEscape (五虎遁) returns the Heavenly Stem index of the first solar
-// month (寅月) based on the year's Heavenly Stem.
-//
-//	Year Stem   | 1st Month Stem
-//	甲/己 Jia/Ji   → 丙 Bing (2)
-//	乙/庚 Yi/Geng  → 戊 Wu  (4)
-//	丙/辛 Bing/Xin → 庚 Geng (6)
-//	丁/壬 Ding/Ren → 壬 Ren  (8)
-//	戊/癸 Wu/Gui   → 甲 Jia  (0)
-//
-// Source: HKO Table 4, Yuan Hai Zi Ping / 渊海子平
 func fiveTigersEscape(yearStem int) int {
 	return (yearStem%5)*2 + 2
 }
 
-// monthStemBranch computes the Heavenly Stem and Earthly Branch for the month
-// pillar.  The branch uses JDN-based solar-term lookup; the stem uses the
-// Five Tigers Escape formula.
 func monthStemBranch(yearStem, year, month, day, hour, min int) (stem, branch int) {
 	branch = solarMonthBranch(year, month, day, hour, min)
 	monthIndex := (branch - 2 + 12) % 12
@@ -211,11 +484,6 @@ func daysFrom1900Jan1(year, month, day int) int {
 	return total
 }
 
-// dayStemBranch computes the Heavenly Stem and Earthly Branch for the day
-// pillar.  Uses the unbroken sexagenary day count with reference
-// Jan 1, 1900 = 甲戌 (Jia-Xu, index 10).
-//
-// Source: https://en.wikipedia.org/wiki/Sexagenary_cycle#Sexagenary_days
 func dayStemBranch(year, month, day int) (stem, branch int) {
 	days := daysFrom1900Jan1(year, month, day)
 	idx := (10 + days) % 60
@@ -227,13 +495,6 @@ func dayStemBranch(year, month, day int) (stem, branch int) {
 	return
 }
 
-// baziDayPillarDate returns the effective date for the Bazi Day Pillar.
-//
-// In Bazi the day begins at 子时 (23:00), not midnight.  When the birth
-// hour is ≥ 23, the Day Pillar rolls forward to the next calendar date while
-// the Hour Pillar still uses branch 子 (0) for 23:00–00:59.
-//
-// Source: https://www.hko.gov.hk/en/gts/time/stemsandbranches.htm Table 3
 func baziDayPillarDate(year, month, day, hour int) (int, int, int) {
 	if hour < 23 {
 		return year, month, day
@@ -241,7 +502,6 @@ func baziDayPillarDate(year, month, day, hour int) (int, int, int) {
 	return addOneDay(year, month, day)
 }
 
-// addOneDay returns the Gregorian date one day after (year, month, day).
 func addOneDay(year, month, day int) (int, int, int) {
 	monthDays := [12]int{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
 	if isLeapYear(year) {
@@ -267,17 +527,6 @@ func hourBranch(hour24 int) int {
 	return (hour24 + 1) % 24 / 2
 }
 
-// fiveRatsEscape (五鼠遁) returns the Heavenly Stem index of 子时 based on
-// the day's Heavenly Stem.
-//
-//	Day Stem     → Zi hour Stem
-//	甲/己 Jia/Ji   → 甲 Jia (0)
-//	乙/庚 Yi/Geng  → 丙 Bing (2)
-//	丙/辛 Bing/Xin → 戊 Wu (4)
-//	丁/壬 Ding/Ren → 庚 Geng (6)
-//	戊/癸 Wu/Gui   → 壬 Ren (8)
-//
-// Source: HKO Table 5, Yuan Hai Zi Ping / 渊海子平
 func fiveRatsEscape(dayStem int) int {
 	return (dayStem % 5) * 2
 }
@@ -374,12 +623,38 @@ func elementDescriptions() Descriptions {
 }
 
 // =============================================================================
+// Build enriched pillar data
+// =============================================================================
+
+func buildPillar(stem, branch int) Pillar {
+	hs := make([]string, len(hiddenStems[branch]))
+	for i, s := range hiddenStems[branch] {
+		hs[i] = heavenlyStems[s]
+	}
+	return Pillar{
+		Stem:          heavenlyStems[stem],
+		StemElement:   stemElement[stem],
+		StemYinYang:   stemYinYang(stem),
+		Branch:        earthlyBranches[branch],
+		BranchElement: branchElement[branch],
+		HiddenStems:   hs,
+	}
+}
+
+func buildTenGods(dayStem int, yStem, mStem, dStem, hStem int) map[string]TenGodEntry {
+	return map[string]TenGodEntry{
+		"yearStem":  {Element: stemElement[yStem], God: tenGod(dayStem, yStem)},
+		"monthStem": {Element: stemElement[mStem], God: tenGod(dayStem, mStem)},
+		"dayStem":   {Element: stemElement[dStem], God: "Day Master"},
+		"hourStem":  {Element: stemElement[hStem], God: tenGod(dayStem, hStem)},
+	}
+}
+
+// =============================================================================
 // Main API
 // =============================================================================
 
-// computeProfile takes a birthdate (YYYY-MM-DD) and optional birthtime
-// (HH:MM, defaults to "12:00") and returns a fully computed Bazi profile.
-func computeProfile(birthdate, birthtime string) Profile {
+func computeProfile(birthdate, birthtime, gender string) Profile {
 	parts := strings.Split(birthdate, "-")
 	if len(parts) < 3 {
 		return fallbackProfile()
@@ -399,6 +674,10 @@ func computeProfile(birthdate, birthtime string) Profile {
 		if len(tp) >= 2 {
 			min, _ = strconv.Atoi(tp[1])
 		}
+	}
+
+	if gender == "" {
+		gender = "male"
 	}
 
 	// --- Year Pillar (Lichun boundary via JDN comparison) ---
@@ -425,6 +704,7 @@ func computeProfile(birthdate, birthtime string) Profile {
 	// --- Day Master (日主) ---
 	dominant := stemElement[dStem]
 
+	// --- Life Path Number ---
 	lp := lifePathNumber(birthdate)
 
 	// --- Elemental Balance ---
@@ -438,8 +718,7 @@ func computeProfile(birthdate, birthtime string) Profile {
 	balance := make(map[string]int, 5)
 	if total > 0 {
 		allocated := 0
-		elements := []string{"wood", "fire", "earth", "metal", "water"}
-		for _, el := range elements {
+		for _, el := range elementOrder {
 			pct := int(math.Round(float64(raw[el]) * 100.0 / float64(total)))
 			balance[el] = pct
 			allocated += pct
@@ -449,19 +728,76 @@ func computeProfile(birthdate, birthtime string) Profile {
 		balance = map[string]int{"wood": 20, "fire": 20, "earth": 20, "metal": 20, "water": 20}
 	}
 
+	// --- Pillar data ---
+	pillars := map[string]Pillar{
+		"year":  buildPillar(yStem, yBranch),
+		"month": buildPillar(mStem, mBranch),
+		"day":   buildPillar(dStem, dBranch),
+		"hour":  buildPillar(hStem, hBranch),
+	}
+
+	// --- Day Master info ---
+	dayMaster := DayMaster{
+		Stem:    heavenlyStems[dStem],
+		Element: dominant,
+		YinYang: stemYinYang(dStem),
+	}
+
+	// --- Season ---
+	seasonInfo := seasonTable[mBranch]
+	season := SeasonInfo{
+		Name:    seasonInfo.season,
+		Branch:  earthlyBranches[mBranch],
+		Element: seasonInfo.peak,
+	}
+
+	// --- Day Master Strength ---
+	stems := []int{yStem, mStem, dStem, hStem}
+	branches := []int{yBranch, mBranch, dBranch, hBranch}
+	dmStrength, _ := determineDMStrength(dominant, seasonInfo.peak, stems, branches)
+
+	// --- Yong Shen ---
+	yongShen, favorable, unfavorable := determineYongShen(dominant, dmStrength)
+
+	// --- Ten Gods ---
+	tenGods := buildTenGods(dStem, yStem, mStem, dStem, hStem)
+
+	// --- Luck Cycles ---
+	forward := luckDirection(yStem, gender)
+	startAge := luckStartAge(birthJDN, mBranch, forward, solarYear)
+	luckCycles := computeLuckCycles(mStem, mBranch, forward, startAge)
+
 	return Profile{
-		Dominant:     dominant,
-		Lp:           lp,
-		Balance:      balance,
-		Descriptions: elementDescriptions(),
+		Dominant:           dominant,
+		Lp:                 lp,
+		Balance:            balance,
+		Descriptions:       elementDescriptions(),
+		Pillars:            pillars,
+		DayMaster:          dayMaster,
+		DmStrength:         dmStrength,
+		Season:             season,
+		YongShen:           yongShen,
+		FavorableElements:  favorable,
+		UnfavorableElements: unfavorable,
+		TenGods:            tenGods,
+		LuckCycles:         luckCycles,
 	}
 }
 
 func fallbackProfile() Profile {
 	return Profile{
-		Dominant:     "earth",
-		Lp:           0,
-		Balance:      map[string]int{"wood": 20, "fire": 20, "earth": 20, "metal": 20, "water": 20},
-		Descriptions: elementDescriptions(),
+		Dominant:           "earth",
+		Lp:                 0,
+		Balance:            map[string]int{"wood": 20, "fire": 20, "earth": 20, "metal": 20, "water": 20},
+		Descriptions:       elementDescriptions(),
+		Pillars:            map[string]Pillar{},
+		DayMaster:          DayMaster{},
+		DmStrength:         "unknown",
+		Season:             SeasonInfo{},
+		YongShen:           YongShenInfo{},
+		FavorableElements:  []string{},
+		UnfavorableElements: []string{},
+		TenGods:            map[string]TenGodEntry{},
+		LuckCycles:         []LuckCycle{},
 	}
 }

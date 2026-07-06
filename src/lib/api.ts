@@ -1,8 +1,8 @@
 import type { Profile } from './calculations';
 
-export async function fetchProfile(birthdate: string, birthtime?: string): Promise<Profile> {
-  const body = JSON.stringify({ birthdate, birthtime });
-  console.log('[api] POST /api/profile', body, 'birthtime param:', JSON.stringify(birthtime));
+export async function fetchProfile(birthdate: string, birthtime?: string, gender?: string): Promise<Profile> {
+  const body = JSON.stringify({ birthdate, birthtime, gender });
+  console.log('[api] POST /api/profile', body);
   const res = await fetch('/api/profile', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -6,6 +6,7 @@ export type AppState = {
   birthdate: string;
   birthtime: string;
   city: string;
+  gender: string;
   unlocked: boolean;
   screen: 'onboard' | 'deep' | 'dashboard';
   activeTab: 'romance' | 'health' | 'career' | 'wealth';
@@ -16,6 +17,7 @@ const DEFAULT_STATE: AppState = {
   birthdate: '',
   birthtime: '',
   city: '',
+  gender: '',
   unlocked: false,
   screen: 'onboard',
   activeTab: 'romance',

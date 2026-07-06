@@ -14,6 +14,7 @@ export default function App() {
     birthdate: string;
     birthtime: string;
     city: string;
+    gender: string;
     unlocked: boolean;
   }) {
     console.log('[app] handleReveal:', data);
@@ -22,6 +23,7 @@ export default function App() {
         birthdate: data.birthdate,
         birthtime: data.birthtime,
         city: data.city,
+        gender: data.gender,
         unlocked: false,
         pendingAddTime: false,
       });
@@ -33,6 +35,7 @@ export default function App() {
       birthdate: data.birthdate,
       birthtime: data.birthtime,
       city: data.city,
+      gender: data.gender,
       unlocked: true,
       screen: 'dashboard',
       activeTab: 'romance',
@@ -83,6 +86,7 @@ export default function App() {
             initialBirthdate={state.birthdate}
             initialBirthtime={state.birthtime}
             initialCity={state.city}
+            initialGender={state.gender}
             pendingAddTime={state.pendingAddTime}
             onReveal={handleReveal}
             onAddTimeAcknowledged={consumePendingAddTime}
@@ -98,6 +102,7 @@ export default function App() {
           <DashboardScreen
             birthdate={state.birthdate}
             birthtime={state.birthtime}
+            gender={state.gender}
             unlocked={state.unlocked}
             activeTab={state.activeTab}
             onTabChange={handleTabChange}

@@ -33,6 +33,7 @@ const TAB_CONFIG: { key: TabKey; label: string; icon: React.ElementType }[] = [
 export type DashboardScreenProps = {
   birthdate: string;
   birthtime?: string;
+  gender?: string;
   unlocked: boolean;
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
@@ -43,6 +44,7 @@ export type DashboardScreenProps = {
 export function DashboardScreen({
   birthdate,
   birthtime,
+  gender,
   unlocked,
   activeTab,
   onTabChange,
@@ -56,12 +58,12 @@ export function DashboardScreen({
   useEffect(() => {
     setLoading(true);
     setError(false);
-    console.log('[dashboard] fetchProfile called with:', { birthdate, birthtime: JSON.stringify(birthtime) });
-    fetchProfile(birthdate, birthtime)
+    console.log('[dashboard] fetchProfile called with:', { birthdate, birthtime, gender });
+    fetchProfile(birthdate, birthtime, gender)
       .then(setProfile)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [birthdate, birthtime]);
+  }, [birthdate, birthtime, gender]);
 
   return (
     <section className="flex flex-col min-h-[640px] pb-6 gap-3.5">

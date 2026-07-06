@@ -2,10 +2,58 @@ import { type ElementKey } from './constants';
 
 export type ElementalBalance = Record<ElementKey, number>;
 
+export type Pillar = {
+  stem: string;
+  stemElement: string;
+  stemYinYang: string;
+  branch: string;
+  branchElement: string;
+  hiddenStems: string[];
+};
+
+export type DayMaster = {
+  stem: string;
+  element: string;
+  yinYang: string;
+};
+
+export type SeasonInfo = {
+  name: string;
+  branch: string;
+  element: string;
+};
+
+export type YongShenInfo = {
+  element: string;
+  reason: string;
+};
+
+export type TenGodEntry = {
+  element: string;
+  god: string;
+};
+
+export type LuckCycle = {
+  startAge: number;
+  endAge: number;
+  stem: string;
+  branch: string;
+  element: string;
+};
+
 export type Profile = {
   dominant: ElementKey;
   lp: number;
   balance: ElementalBalance;
+  pillars?: Record<string, Pillar>;
+  dayMaster?: DayMaster;
+  dmStrength?: string;
+  season?: SeasonInfo;
+  yongShen?: YongShenInfo;
+  favorableElements?: string[];
+  unfavorableElements?: string[];
+  tenGods?: Record<string, TenGodEntry>;
+  luckCycles?: LuckCycle[];
 };
 
 export function reduceToBase(n: number): number {
