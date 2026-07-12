@@ -1,0 +1,542 @@
+# ============================================================================
+# BaZi Engine Configuration
+# All configurable data in one place. Loaded by Go server at startup.
+# ============================================================================
+
+# --------------------------------------------------------------------------
+# Tabs — defines what insight categories appear in the frontend dashboard.
+# Icon is a string key; frontend maps it to an SVG component.
+# --------------------------------------------------------------------------
+tabs:
+  - key: romance
+    label: Romance
+    icon: heart
+  - key: health
+    label: Health
+    icon: person
+  - key: career
+    label: Career
+    icon: briefcase
+  - key: wealth
+    label: Wealth
+    icon: circles
+
+# --------------------------------------------------------------------------
+# Element metadata — labels, short codes, hex colors (used by frontend).
+# --------------------------------------------------------------------------
+elements:
+  wood:
+    label: Wood
+    short: WOOD
+    color: "#5E8A4C"
+  fire:
+    label: Fire
+    short: FIRE
+    color: "#BD5B3B"
+  earth:
+    label: Earth
+    short: EARTH
+    color: "#A97C34"
+  metal:
+    label: Metal
+    short: METAL
+    color: "#6E7B8C"
+  water:
+    label: Water
+    short: WATER
+    color: "#35708E"
+
+# --------------------------------------------------------------------------
+# Heavenly Stems (天干) — 10 stems, index 0-9.
+# --------------------------------------------------------------------------
+heavenly_stems:
+  - index: 0
+    name: Jia
+    element: wood
+    polarity: yang
+  - index: 1
+    name: Yi
+    element: wood
+    polarity: yin
+  - index: 2
+    name: Bing
+    element: fire
+    polarity: yang
+  - index: 3
+    name: Ding
+    element: fire
+    polarity: yin
+  - index: 4
+    name: Wu
+    element: earth
+    polarity: yang
+  - index: 5
+    name: Ji
+    element: earth
+    polarity: yin
+  - index: 6
+    name: Geng
+    element: metal
+    polarity: yang
+  - index: 7
+    name: Xin
+    element: metal
+    polarity: yin
+  - index: 8
+    name: Ren
+    element: water
+    polarity: yang
+  - index: 9
+    name: Gui
+    element: water
+    polarity: yin
+
+# --------------------------------------------------------------------------
+# Earthly Branches (地支) — 12 branches, index 0-11.
+# hidden_stems: indices into heavenly_stems[] that reside in this branch.
+# --------------------------------------------------------------------------
+earthly_branches:
+  - index: 0
+    name: Zi
+    animal: Rat
+    element: water
+    polarity: yang
+    hidden_stems: [9]
+  - index: 1
+    name: Chou
+    animal: Ox
+    element: earth
+    polarity: yin
+    hidden_stems: [5, 9, 7]
+  - index: 2
+    name: Yin
+    animal: Tiger
+    element: wood
+    polarity: yang
+    hidden_stems: [0, 2, 4]
+  - index: 3
+    name: Mao
+    animal: Rabbit
+    element: wood
+    polarity: yin
+    hidden_stems: [1]
+  - index: 4
+    name: Chen
+    animal: Dragon
+    element: earth
+    polarity: yang
+    hidden_stems: [4, 1, 9]
+  - index: 5
+    name: Si
+    animal: Snake
+    element: fire
+    polarity: yin
+    hidden_stems: [2, 4, 6]
+  - index: 6
+    name: Wu
+    animal: Horse
+    element: fire
+    polarity: yang
+    hidden_stems: [3, 5]
+  - index: 7
+    name: Wei
+    animal: Goat
+    element: earth
+    polarity: yin
+    hidden_stems: [5, 3, 1]
+  - index: 8
+    name: Shen
+    animal: Monkey
+    element: metal
+    polarity: yang
+    hidden_stems: [6, 4, 8]
+  - index: 9
+    name: You
+    animal: Rooster
+    element: metal
+    polarity: yin
+    hidden_stems: [7]
+  - index: 10
+    name: Xu
+    animal: Dog
+    element: earth
+    polarity: yang
+    hidden_stems: [4, 7, 3]
+  - index: 11
+    name: Hai
+    animal: Pig
+    element: water
+    polarity: yin
+    hidden_stems: [8, 0]
+
+# --------------------------------------------------------------------------
+# Element cycles — indices matching heavenly_stems/earthly_branches elements.
+# productive: Wood(0)→Fire(1)→Earth(2)→Metal(3)→Water(4)→Wood(0)
+# controlling: Wood(0)→Earth(2)→Water(4)→Fire(1)→Metal(3)→Wood(0)
+# --------------------------------------------------------------------------
+element_cycles:
+  productive: [1, 2, 3, 4, 0]
+  controlling: [2, 3, 4, 0, 1]
+
+# --------------------------------------------------------------------------
+# Seasons — which branches belong to which season, and the peak element.
+# --------------------------------------------------------------------------
+seasons:
+  - name: spring
+    peak_element: wood
+    branches: [2, 3, 4]
+  - name: summer
+    peak_element: fire
+    branches: [5, 6, 7]
+  - name: autumn
+    peak_element: metal
+    branches: [8, 9, 10]
+  - name: winter
+    peak_element: water
+    branches: [11, 0, 1]
+
+# --------------------------------------------------------------------------
+# Cities — for frontend autocomplete and timezone-aware calculations.
+# --------------------------------------------------------------------------
+cities:
+  - name: Singapore
+    country: SGP
+    timezone: 8
+  - name: Hong Kong
+    country: HKG
+    timezone: 8
+  - name: Tokyo
+    country: JPN
+    timezone: 9
+  - name: Shanghai
+    country: CHN
+    timezone: 8
+  - name: Beijing
+    country: CHN
+    timezone: 8
+  - name: Taipei
+    country: TWN
+    timezone: 8
+  - name: Seoul
+    country: KOR
+    timezone: 9
+  - name: Bangkok
+    country: THA
+    timezone: 7
+  - name: Kuala Lumpur
+    country: MYS
+    timezone: 8
+  - name: Manila
+    country: PHL
+    timezone: 8
+  - name: Jakarta
+    country: IDN
+    timezone: 7
+  - name: Mumbai
+    country: IND
+    timezone: 5.5
+  - name: Delhi
+    country: IND
+    timezone: 5.5
+  - name: London
+    country: GBR
+    timezone: 0
+  - name: Paris
+    country: FRA
+    timezone: 1
+  - name: Berlin
+    country: DEU
+    timezone: 1
+  - name: Madrid
+    country: ESP
+    timezone: 1
+  - name: Rome
+    country: ITA
+    timezone: 1
+  - name: New York
+    country: USA
+    timezone: -5
+  - name: Los Angeles
+    country: USA
+    timezone: -8
+  - name: Chicago
+    country: USA
+    timezone: -6
+  - name: Toronto
+    country: CAN
+    timezone: -5
+  - name: Vancouver
+    country: CAN
+    timezone: -8
+  - name: Sydney
+    country: AUS
+    timezone: 11
+  - name: Melbourne
+    country: AUS
+    timezone: 11
+  - name: Auckland
+    country: NZL
+    timezone: 13
+  - name: Dubai
+    country: ARE
+    timezone: 4
+  - name: Cairo
+    country: EGY
+    timezone: 2
+  - name: Lagos
+    country: NGA
+    timezone: 1
+  - name: Nairobi
+    country: KEN
+    timezone: 3
+  - name: Johannesburg
+    country: ZAF
+    timezone: 2
+  - name: Sao Paulo
+    country: BRA
+    timezone: -3
+  - name: Mexico City
+    country: MEX
+    timezone: -6
+  - name: Buenos Aires
+    country: ARG
+    timezone: -3
+
+# --------------------------------------------------------------------------
+# Day Master Profiles (日主) — 10 profiles, one per Heavenly Stem.
+# Each has archetype, core traits, summary, and per-tab text.
+# --------------------------------------------------------------------------
+day_master_profiles:
+  Jia:
+    archetype: "The Pioneer"
+    core_traits: ["Independent", "Progressive", "Stubborn"]
+    summary: "You operate like a towering tree — deeply rooted, always reaching for growth, and intensely protective of those under your canopy."
+    tab_text:
+      romance: "You love the way a tree loves — reaching outward, always growing the bond rather than settling into it. Partners feel your steady, expansive warmth, but you can outgrow connections that stop stretching with you."
+      health: "Vitality flows through your tendons and decision-making organs. Movement — real movement, not just intention — keeps your energy from turning brittle. Stagnation is your body's least favorite word."
+      career: "You thrive where there's room to expand: building, planting, initiating. Rigid hierarchies frustrate you; you do your best work when you're allowed to grow the role, not just fill it."
+      wealth: "Your money grows the way you do — slowly, then suddenly. You're better at cultivating long-term value than chasing quick wins, though impatience can tempt you to pull up the roots too early."
+  Yi:
+    archetype: "The Weaver"
+    core_traits: ["Flexible", "Resilient", "Diplomatic", "Artistic"]
+    summary: "Like a winding vine, you adapt to whatever supports you — bending instead of breaking, finding your way toward light through the smallest openings."
+    tab_text:
+      romance: "You love gracefully, adapting to your partner's rhythm without losing your own melody. Your flexibility makes relationships work, but you need structures that won't smother your need to grow."
+      health: "Your resilience is your superpower — you bounce back from illness and injury faster than most. But flexibility without boundaries leads to carrying others' weight. Guard your core."
+      career: "You excel in roles that require diplomacy, negotiation, and lateral thinking. You're a natural connector of people and ideas, though you can struggle with direct confrontation."
+      wealth: "Your financial approach is opportunistic and adaptive. You spot gaps and niches others miss, but scattering your energy across too many ventures is your Achilles' heel."
+  Bing:
+    archetype: "The Radiance"
+    core_traits: ["Warm", "Expressive", "Charismatic", "Routine-driven"]
+    summary: "Like the sun at midday, you illuminate everything around you. Your warmth draws people in, and your presence commands attention without demanding it."
+    tab_text:
+      romance: "You love loudly and visibly. Chemistry matters enormously to you, and you'd rather burn brightly for a short season than dim yourself for stability. Partners either match your heat or feel scorched by it."
+      health: "Your circulatory system and heart carry your signature. Passion fuels you, but unchecked intensity burns through your reserves fast — rest isn't optional, it's fuel."
+      career: "You're the spark in the room: charismatic, quick, magnetic to opportunity. You do best in visible, expressive roles, and worst in ones that ask you to stay quiet and wait your turn."
+      wealth: "Money moves fast around you — earned in bursts, spent with flair. Building lasting wealth means pairing your instinct for opportunity with someone who can bank the embers."
+  Ding:
+    archetype: "The Illuminator"
+    core_traits: ["Intuitive", "Meticulous", "Sacrificing", "Emotional"]
+    summary: "Like a candle flame, you are warm, observant, and guide others through darkness — but you risk burning out if you give too much of yourself away."
+    tab_text:
+      romance: "You love with quiet intensity — noticing every detail, remembering every small thing. Your devotion is profound, but you can lose yourself in the other person. Keep a piece of your own flame."
+      health: "Your emotional center is your barometer. When you're depleted, it shows in your energy and sleep. You need solitude to recharge — not as escape, but as maintenance."
+      career: "You excel in roles that require precision, care, and emotional intelligence. You make things beautiful and functional, but you need recognition to keep your fire lit."
+      wealth: "You spend thoughtfully and save carefully, but your sacrificial nature can lead to undervaluing your own worth. Your wealth grows when you invest in yourself first."
+  Wu:
+    archetype: "The Mountain"
+    core_traits: ["Stable", "Reliable", "Slow to change", "Trustworthy"]
+    summary: "Like a mountain, you cannot be easily moved. Your stability is your greatest gift to those around you, but even mountains need to let the wind reshape them occasionally."
+    tab_text:
+      romance: "You love like ground you can build a house on. Steady, dependable, unglamorous in the best way — you're the partner people come home to, not just the one they chase."
+      health: "Your digestive center is your barometer. When you're overextended caring for everyone else, it shows up first in your gut. Nourishment, including your own, is not indulgence."
+      career: "You're the stabilizer — the one who makes plans actually work. Reliable execution is your edge; just watch for being handed everyone else's unfinished business because you never say no."
+      wealth: "You save before you spend and plan before you leap. Your wealth grows through patience and diversification rather than bold bets — steady compounding is your natural mode."
+  Ji:
+    archetype: "The Nurturer"
+    core_traits: ["Nurturing", "Productive", "Adaptable", "Overthinking"]
+    summary: "Like fertile soil, you give life to whatever is planted in you. Your adaptability is your strength, but you can absorb too much and lose your own boundaries."
+    tab_text:
+      romance: "You love by giving — your attention, your care, your resources. You make your partner feel profoundly supported, but you must learn to receive as generously as you give."
+      health: "Your body responds to what you digest — food, emotion, experience. When boundaries are weak, you absorb the stress of others. Cultivate discrimination in what you take in."
+      career: "You are extraordinarily productive when you have clear direction and supportive structure. You turn ideas into reality, but without clear boundaries, you can be exploited."
+      wealth: "You have a natural talent for turning resources into growth. Your wealth multiplies when you focus on depth rather than breadth, like soil that is tended rather than spread thin."
+  Geng:
+    archetype: "The Blade"
+    core_traits: ["Altruistic", "Direct", "Fierce", "Justice-seeking"]
+    summary: "Like a raw sword, you are forged for purpose — direct, honest, and unafraid of conflict when it serves a greater good. Your strength is tested most in adversity."
+    tab_text:
+      romance: "You love with fierce loyalty and directness. You don't play games; you say what you mean and expect the same. Your honesty is a gift, though it can cut before you soften it."
+      health: "Your lungs and respiratory system carry your life force. Fresh air, open spaces, and physical discipline keep you balanced. Suppressed anger lodges in your chest."
+      career: "You are built for challenge and adversity. You excel in competitive environments where merit is recognized. Injustice of any kind drains your motivation faster than failure."
+      wealth: "You earn money through effort and confrontation with difficulty. You're not afraid of hard work, and your wealth reflects your willingness to fight for what you deserve."
+  Xin:
+    archetype: "The Artisan"
+    core_traits: ["Elegant", "Sharp-tongued", "Perfectionist", "Sensitive"]
+    summary: "Like finely crafted jewelry, you are precise, beautiful, and valuable — but the pressure to be flawless can be your heaviest burden."
+    tab_text:
+      romance: "You love with precision — you notice details others miss and hold high standards for what a relationship should be. That clarity is a gift, but it can read as distance if you don't name what you feel."
+      health: "Your lungs and skin carry your tension first. Structure and clean air calm you; chaos and clutter — physical or emotional — drain you faster than almost anything else."
+      career: "You bring order to disorder. Editing, refining, systems, quality control — you make things sharper. You do poorly in loose, undefined roles with no clear standard to meet."
+      wealth: "You're disciplined with money to the point of austerity sometimes. You rarely overspend, and your instinct to cut what isn't working serves your portfolio as well as your closet."
+  Ren:
+    archetype: "The Ocean"
+    core_traits: ["Energetic", "Adventurous", "Intelligent", "Freedom-loving"]
+    summary: "Like the ocean, you are vast, deep, and impossible to contain. Your intelligence runs deep, and you need freedom the way the tide needs the moon."
+    tab_text:
+      romance: "You love the way water moves — adapting to whoever you're with, reading what they need before they say it. That flexibility draws people in, but you can lose your own shape if you're not careful."
+      health: "Your kidneys and adrenal reserves are your tell. You run on deep reserves rather than quick bursts, which means burnout, when it comes, comes from the bottom up. Protect your sleep."
+      career: "You're the strategist — comfortable with ambiguity, good at finding the path of least resistance to a goal. You underperform in rigid, script-driven roles that don't let you improvise."
+      wealth: "Your money finds unconventional channels — you're drawn to opportunities others overlook. The risk is spreading too thin; depth in a few currents beats width across all of them."
+  Gui:
+    archetype: "The Mystic"
+    core_traits: ["Mysterious", "Perceptive", "Introverted", "Creative"]
+    summary: "Like morning dew, you appear gentle and fleeting — yet your perceptiveness and creativity run deeper than anyone realizes. Your quietness is not emptiness."
+    tab_text:
+      romance: "You love quietly but profoundly. You sense your partner's unspoken needs and respond to them before they ask. Your challenge is being known — letting someone see past the mist."
+      health: "Your water element governs your kidneys and reproductive system. Emotional withdrawal can freeze your energy. Warmth — of company, of purpose — keeps your inner waters flowing."
+      career: "You thrive in creative, investigative, or healing professions. You see what others miss and can synthesize complex information into elegant solutions. Public-facing roles drain you."
+      wealth: "Your relationship with money is intuitive rather than analytical. You attract resources through your creativity and insight, but you need grounded partners to help you manage them."
+
+# --------------------------------------------------------------------------
+# Ten Gods (十神) — 10 behavioral archetypes derived from stem relationships.
+# --------------------------------------------------------------------------
+ten_gods:
+  Peer:
+    category: "Companion"
+    drive: "Self-confidence, teamwork, and ego"
+    positive_traits: ["Supportive", "Cooperative", "Strong-willed"]
+    negative_traits: ["Overly competitive", "Stubborn", "Self-centered"]
+    description: "When Peer appears strongly, you see yourself reflected in others — collaboration is natural, but so is comparison. Your sense of self is shaped by those around you."
+  "Rob Wealth":
+    category: "Companion"
+    drive: "Competition for resources and recognition"
+    positive_traits: ["Assertive", "Resourceful", "Survival instinct"]
+    negative_traits: ["Possessive", "Easily jealous", "Territorial"]
+    description: "Rob Wealth energy makes you keenly aware of limited resources. You fight for your share and protect what's yours, but can struggle with generosity and trust."
+  "Eating God":
+    category: "Output"
+    drive: "Creative expression, refinement, and enjoyment"
+    positive_traits: ["Artistic", "Enjoys comfort", "Deep thinker"]
+    negative_traits: ["Complacent", "Over-indulgent", "Self-absorbed"]
+    description: "Eating God drives you to create, refine, and savor. You have a natural talent for turning inspiration into form — whether art, food, or ideas. Comfort fuels your creativity."
+  "Hurting Officer":
+    category: "Output"
+    drive: "Rebellious expression, innovation, and communication"
+    positive_traits: ["Eloquent", "Innovative", "Persuasive"]
+    negative_traits: ["Rebellious", "Argumentative", "Emotionally volatile"]
+    description: "Hurting Officer gives you the gift of words and the urge to challenge the status quo. You speak truth to power, but your bluntness can hurt those you don't intend to wound."
+  "Direct Resource":
+    category: "Resource"
+    drive: "Knowledge, intuition, and inner cultivation"
+    positive_traits: ["Wise", "Patient", "Nurturing"]
+    negative_traits: ["Over-protective", "Resistant to change", "Smothering"]
+    description: "Direct Resource connects you to the flow of knowledge and intuition. You learn deeply and teach naturally, drawing wisdom from tradition and passing it forward."
+  "Indirect Resource":
+    category: "Resource"
+    drive: "Informal learning, adaptability, and unconventional wisdom"
+    positive_traits: ["Resourceful", "Versatile", "Open-minded"]
+    negative_traits: ["Scattered", "Unreliable", "Jack-of-all-trades"]
+    description: "Indirect Resource makes you a natural autodidact. You pick up skills from everywhere — people, experiences, accidents — and synthesize them in unexpected ways."
+  "Direct Wealth":
+    category: "Wealth"
+    drive: "Steady ambition, earned success, and material stability"
+    positive_traits: ["Ambitious", "Disciplined", "Practical"]
+    negative_traits: ["Materialistic", "Workaholic", "Risk-averse"]
+    description: "Direct Wealth drives you toward tangible achievement. You build steadily through effort and discipline, valuing the security that comes from earned success."
+  "Indirect Wealth":
+    category: "Wealth"
+    drive: "Entrepreneurial risk, opportunity hunting, and resourcefulness"
+    positive_traits: ["Entrepreneurial", "Opportunistic", "Charming"]
+    negative_traits: ["Reckless", "Unstable", "Overindulgent"]
+    description: "Indirect Wealth makes you a natural entrepreneur. You spot opportunities others miss and aren't afraid to take calculated risks. Cash flow may be irregular but rewarding."
+  "Direct Officer":
+    category: "Influence"
+    drive: "Structure, discipline, and righteous authority"
+    positive_traits: ["Law-abiding", "Responsible", "Organized"]
+    negative_traits: ["Rigid", "Anxious under chaos", "Overly serious"]
+    description: "Direct Officer gives you respect for structure and order. You thrive with clear rules and hierarchy, bringing reliability and a strong moral compass to everything you do."
+  "Seven Kill":
+    category: "Influence"
+    drive: "Power, control, and overcoming adversity"
+    positive_traits: ["Brave", "Determined", "Authoritative"]
+    negative_traits: ["Aggressive", "Controlling", "Prone to conflict"]
+    description: "Seven Kill is the warrior archetype. You face challenges head-on with courage and determination, but your intensity can intimidate others and create unnecessary conflict."
+
+# --------------------------------------------------------------------------
+# Clash Modifiers — conditional text inserts based on chart combinations.
+# Evaluated at profile assembly time; appended to tab text.
+# --------------------------------------------------------------------------
+clash_modifiers:
+  - id: fire_feeds_jia_wood
+    condition:
+      day_master: Jia
+      dominant_element: fire
+    output:
+      text_modifier: "Strong Fire feeding your Wood makes you action-oriented but impatient — you pursue growth with an intensity that can burn bridges before you notice the smoke."
+  - id: metal_controls_jia_wood
+    condition:
+      day_master: Jia
+      dominant_element: metal
+    output:
+      text_modifier: "Metal controlling your Wood creates inner tension — you feel constrained by rules and authority, which either sharpens your discipline or frustrates your spirit."
+  - id: earth_drains_jia_wood
+    condition:
+      day_master: Jia
+      dominant_element: earth
+    output:
+      text_modifier: "Earth draining your Wood energy means you give a lot to others. Your nurturing instinct is strong, but you need to ensure your own roots are watered first."
+  - id: fire_overwhelms_bing
+    condition:
+      day_master: Bing
+      dominant_element: fire
+    output:
+      text_modifier: "Double Fire intensifies your natural radiance to near-blinding levels. You have enormous creative energy but risk burning out your support systems."
+  - id: water_controls_bing_fire
+    condition:
+      day_master: Bing
+      dominant_element: water
+    output:
+      text_modifier: "Water controlling your Fire creates emotional complexity. Your natural warmth is tempered by deep feeling — you are passionate but guarded, intense but reflective."
+  - id: strong_dm_direct_officer
+    condition:
+      dominant_ten_god: "Direct Officer"
+      dm_strength: strong
+    output:
+      text_modifier: "A strong Day Master with Direct Officer means you carry authority naturally. Leadership suits you, but watch for rigidity — not every situation needs a rule."
+  - id: weak_dm_seven_kill
+    condition:
+      dominant_ten_god: "Seven Kill"
+      dm_strength: weak
+    output:
+      text_modifier: "A weak Day Master facing Seven Kill means life often feels like a series of challenges. Building supportive structures — people, habits, knowledge — is essential."
+  - id: wood_day_spring
+    condition:
+      day_master: Jia
+      season: spring
+    output:
+      text_modifier: "Spring-born Wood is in its natural element. Your growth potential is at its peak, but success depends on channeling that energy with discipline."
+  - id: wood_day_autumn
+    condition:
+      day_master: Yi
+      season: autumn
+    output:
+      text_modifier: "Autumn challenges Wood energy — the season of Metal cuts your natural expression. You are being sharpened and refined, though it may not feel comfortable."
+  - id: fire_day_winner
+    condition:
+      day_master: Ding
+      season: winter
+    output:
+      text_modifier: "Winter-born Fire must fight to stay lit. Your inner flame is hard-won and precious — guard it carefully and seek warmth in relationships and purpose."
+  - id: wealth_overload
+    condition:
+      dominant_ten_god: "Indirect Wealth"
+      dm_strength: weak
+    output:
+      text_modifier: "Opportunities come at you faster than you can handle. Not every opportunity is yours to take — discernment matters more than ambition right now."
+  - id: resource_overload
+    condition:
+      dominant_ten_god: "Direct Resource"
+      dm_strength: strong
+    output:
+      text_modifier: "Strong Resource energy means you are deeply knowledgeable and supported, but can become overly comfortable. Growth requires stepping beyond what you already know."

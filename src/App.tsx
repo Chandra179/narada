@@ -4,7 +4,6 @@ import { DashboardScreen } from './components/DashboardScreen';
 import { Modal } from './components/Modal';
 import { OnboardScreen } from './components/OnboardScreen';
 import { usePersistentState } from './hooks/usePersistentState';
-import type { TabKey } from './lib/constants';
 
 export default function App() {
   const { state, updateState, resetState, consumePendingAddTime } = usePersistentState();
@@ -66,7 +65,7 @@ export default function App() {
     });
   }
 
-  function handleTabChange(tab: TabKey) {
+  function handleTabChange(tab: string) {
     updateState({ activeTab: tab });
   }
 

@@ -9,7 +9,7 @@ export type AppState = {
   gender: string;
   unlocked: boolean;
   screen: 'onboard' | 'deep' | 'dashboard';
-  activeTab: 'romance' | 'health' | 'career' | 'wealth';
+  activeTab: string;
   pendingAddTime?: boolean;
 };
 

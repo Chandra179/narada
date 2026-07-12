@@ -41,6 +41,18 @@ export type LuckCycle = {
   element: string;
 };
 
+export type DayMasterProfileInfo = {
+  archetype: string;
+  coreTraits: string[];
+  summary: string;
+};
+
+export type TenGodInsight = {
+  god: string;
+  category?: string;
+  description: string;
+};
+
 export type Profile = {
   dominant: ElementKey;
   lp: number;
@@ -54,6 +66,11 @@ export type Profile = {
   unfavorableElements?: string[];
   tenGods?: Record<string, TenGodEntry>;
   luckCycles?: LuckCycle[];
+  tabText?: Record<string, string>;
+  dayMasterProfile?: DayMasterProfileInfo;
+  tenGodInsights?: Record<string, TenGodInsight>;
+  textModifiers?: string[];
+  lifePathText?: string;
 };
 
 export function reduceToBase(n: number): number {

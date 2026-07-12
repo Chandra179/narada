@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { CITIES, type City } from '../lib/constants';
+import { useConfig } from '../hooks/useConfig';
+
+type CityItem = {
+  name: string;
+  country: string;
+  timezone: number;
+};
 
 export type CityAutocompleteProps = {
   value: string;
@@ -14,8 +20,9 @@ export function CityAutocomplete({
   id,
   placeholder = 'Start typing a city…',
 }: CityAutocompleteProps) {
+  const { config } = useConfig();
   const [open, setOpen] = useState(false);
-  const [matches, setMatches] = useState<City[]>([]);
+  const [matches, setMatches] = useState<CityItem[]>([]);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,6 +35,8 @@ export function CityAutocomplete({
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  const cities = config?.cities ?? [];
+
   function handleInput(raw: string) {
     onChange(raw);
     const q = raw.trim().toLowerCase();
@@ -36,7 +45,7 @@ export function CityAutocomplete({
       setMatches([]);
       return;
     }
-    const next = CITIES.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 6);
+    const next = cities.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 6);
     setMatches(next);
     setOpen(true);
   }
